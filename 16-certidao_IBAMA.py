@@ -120,6 +120,7 @@ def emitir_certidao_ibama(cpf_cnpj: str) -> dict:
     formatado = formatar_cpf_cnpj(digitos)
 
     session = requests.Session()
+    session.verify = False  # IBAMA tem SSL inconsistente
     session.headers.update(HEADERS)
 
     try:

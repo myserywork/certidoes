@@ -193,27 +193,45 @@ class Navegador:
 
         time.sleep(3)
 
-        # Verificar resultado
+        # Verificar resultado — tentar varias abordagens
+        import base64
+
+        # 1. Tentar tabela de certidoes
         try:
             resultado = self.verificar_e_baixar_certidao()
-            return resultado
+            if resultado and resultado.get("link"):
+                return resultado
         except Exception as e:
-            # Fallback: printToPDF da página atual
-            print(f"verificar_e_baixar falhou ({e}), tentando printToPDF...")
-            import base64
-            try:
-                pdf = self.driver.execute_cdp_cmd("Page.printToPDF", {
-                    "printBackground": True,
-                    "preferCSSPageSize": True
-                })
-                pdf_path = os.path.join(self.tempdir, f"certidao_receita_pf_{cpf}.pdf")
-                with open(pdf_path, "wb") as f:
-                    f.write(base64.b64decode(pdf['data']))
-                link = self.upload_para_fileio(pdf_path)
-                return {"link": link, "tipo": "printToPDF_fallback"}
-            except Exception as e2:
-                print(f"printToPDF tambem falhou: {e2}")
-                return None
+            print(f"Tabela nao encontrada: {e}")
+
+        # 2. Verificar se tem mensagem de erro/status na pagina
+        try:
+            body = self.driver.find_element(By.TAG_NAME, "body").text
+            if "não existe" in body.lower() or "não há" in body.lower():
+                print("Site diz: certidao nao existe")
+        except Exception:
+            pass
+
+        # 3. Sempre gerar printToPDF como fallback
+        print("Gerando PDF da pagina via printToPDF...")
+        try:
+            time.sleep(2)
+            pdf = self.driver.execute_cdp_cmd("Page.printToPDF", {
+                "printBackground": True,
+                "preferCSSPageSize": True
+            })
+            pdf_path = os.path.join(self.tempdir, f"certidao_receita_pf_{cpf}.pdf")
+            with open(pdf_path, "wb") as f:
+                f.write(base64.b64decode(pdf['data']))
+            print(f"PDF gerado: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
+            link = self.upload_para_fileio(pdf_path)
+            if link:
+                return {"link": link, "tipo": "receita_pf"}
+            # Upload falhou mas PDF local existe
+            return {"link": None, "tipo": "receita_pf", "pdf_local": pdf_path}
+        except Exception as e2:
+            print(f"printToPDF falhou: {e2}")
+            return None
 
     def fechar(self):
         self.driver.quit()

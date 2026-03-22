@@ -33,10 +33,10 @@ from api.logger import get_logger
 import api.chrome_patch
 
 # ─── Config ───────────────────────────────────────────────
-MAX_CHROME = int(os.environ.get("MAX_CHROME", "4"))
+MAX_CHROME = int(os.environ.get("MAX_CHROME", "6"))
 WORKER_ID = os.environ.get("WORKER_ID", f"worker-{os.getpid()}")
 DOWNLOADS_DIR = PROJECT_ROOT / "api" / "downloads"
-CERT_TIMEOUT = 120
+CERT_TIMEOUT = 90  # 90s max por certidao (antes era 120)
 
 _shutdown = threading.Event()
 _chrome_sem = None
@@ -63,51 +63,37 @@ def _import_script(filename):
     _script_cache[filename] = mod
     return mod
 
-def _nav(script_name, args, max_retries=2):
-    """Executa script Selenium com retry (sem matar Chrome global)."""
+def _nav(script_name, args):
+    """Executa script Selenium (sem retry — retry eh feito re-enfileirando a task)."""
     mod = _import_script(script_name)
-    last_error = ""
-
-    for attempt in range(1, max_retries + 1):
+    bot = None
+    try:
+        bot = mod.Navegador(headless=False)
+        resultado = bot.emitir_certidao(*args)
+        bot.fechar()
         bot = None
-        try:
-            bot = mod.Navegador(headless=False)
-            resultado = bot.emitir_certidao(*args)
-            bot.fechar()
-            bot = None
 
-            if not resultado:
-                last_error = "Certidao nao disponivel"
-                if attempt < max_retries:
-                    _log.info(f"[{script_name}] tentativa {attempt} vazio, retry...")
-                    time.sleep(2)
-                    continue
-                return {"status": "falha", "mensagem": last_error}
+        if not resultado:
+            return {"status": "falha", "mensagem": "Certidao nao disponivel"}
 
-            if isinstance(resultado, dict):
-                resp = dict(resultado)
-                if "status" in resp and resp["status"] not in ("sucesso", "erro", "falha", "parcial"):
-                    resp["resultado_texto"] = resp["status"]
-                    resp["status"] = "sucesso" if resp.get("link") else "falha"
-                elif "status" not in resp:
-                    resp["status"] = "sucesso" if resp.get("link") else "falha"
-                if not resp.get("link"):
-                    resp["status"] = "falha"
-                    resp.setdefault("mensagem", "PDF nao gerado")
-                return resp
-            return {"status": "sucesso", "link": resultado}
+        if isinstance(resultado, dict):
+            resp = dict(resultado)
+            if "status" in resp and resp["status"] not in ("sucesso", "erro", "falha", "parcial"):
+                resp["resultado_texto"] = resp["status"]
+                resp["status"] = "sucesso" if resp.get("link") else "falha"
+            elif "status" not in resp:
+                resp["status"] = "sucesso" if resp.get("link") else "falha"
+            if not resp.get("link"):
+                resp["status"] = "falha"
+                resp.setdefault("mensagem", "PDF nao gerado")
+            return resp
+        return {"status": "sucesso", "link": resultado}
 
-        except Exception as e:
-            last_error = str(e)[:500]
-            if bot:
-                try: bot.fechar()
-                except Exception: pass
-            if attempt < max_retries:
-                _log.info(f"[{script_name}] tentativa {attempt} erro, retry em 3s...")
-                time.sleep(3)
-                continue
-
-    return {"status": "erro", "mensagem": last_error}
+    except Exception as e:
+        if bot:
+            try: bot.fechar()
+            except Exception: pass
+        return {"status": "erro", "mensagem": str(e)[:500]}
 
 
 # ─── Runners ──────────────────────────────────────────────
@@ -258,6 +244,15 @@ def _update_job_cert(job_id, cert_id, updates):
 
 # ─── Processar 1 task ────────────────────────────────────
 
+RETRIABLE_ERRORS = [
+    "HTTPConnectionPool", "RemoteDisconnected", "Connection aborted",
+    "Max retries exceeded", "invalid session id", "session deleted",
+    "chrome not reachable", "target closed",
+]
+
+def _is_retriable(error_msg: str) -> bool:
+    return any(e.lower() in error_msg.lower() for e in RETRIABLE_ERRORS)
+
 def process_task(job_id, cert_id):
     r = get_redis()
     cert_log = get_logger(f"cert.{cert_id}")
@@ -343,6 +338,19 @@ def process_task(job_id, cert_id):
                                            "resultado": {"status": "erro", "mensagem": str(e)[:500]}})
     finally:
         _chrome_sem.release()
+
+    # Auto-retry: se falhou por Chrome crash, re-enfileirar (max 1 retry)
+    job_after = get_job(job_id)
+    if job_after:
+        cd_after = job_after.get("certidoes", {}).get(cert_id, {})
+        if cd_after.get("status") in ("erro", "falha"):
+            error_msg = (cd_after.get("resultado") or {}).get("mensagem", "")
+            retries = cd_after.get("_retries", 0)
+            if _is_retriable(error_msg) and retries < 1:
+                cert_log.info(f"job={job_id} doc={documento} AUTO-RETRY {cert_id} (erro retriable)")
+                _update_job_cert(job_id, cert_id, {"status": "pendente", "_retries": retries + 1,
+                                                   "inicio": None, "fim": None, "resultado": None})
+                r.lpush(QUEUE_KEY, f"{job_id}:{cert_id}")
 
 
 # ─── Cleanup ──────────────────────────────────────────────
