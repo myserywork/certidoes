@@ -24,7 +24,16 @@ _redis: Optional[redis.Redis] = None
 def get_redis() -> redis.Redis:
     global _redis
     if _redis is None:
-        _redis = redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=10)
+        for attempt in range(3):
+            try:
+                _redis = redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=10, retry_on_timeout=True)
+                _redis.ping()
+                break
+            except Exception:
+                if attempt == 2:
+                    raise
+                import time
+                time.sleep(1)
     return _redis
 
 
@@ -85,6 +94,13 @@ def create_job(params: dict) -> dict:
     is_cpf = bool(params.get("cpf"))
     tipo = "cpf" if is_cpf else "cnpj"
     documento = params.get("cpf") or params.get("cnpj")
+
+    # Validate
+    digitos = ''.join(c for c in (documento or '') if c.isdigit())
+    if is_cpf and len(digitos) != 11:
+        return {"erro": f"CPF invalido: {len(digitos)} digitos", "job_id": None}
+    if not is_cpf and len(digitos) not in (14,):
+        return {"erro": f"CNPJ invalido: {len(digitos)} digitos", "job_id": None}
 
     # Determinar certidoes
     if is_cpf:

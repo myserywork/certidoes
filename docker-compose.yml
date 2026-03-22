@@ -57,6 +57,12 @@ services:
               capabilities: [gpu]
     shm_size: '4gb'
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import redis; r=redis.from_url('${REDIS_URL}'); r.ping()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     volumes:
       - downloads:/app/api/downloads
       - logs:/app/logs

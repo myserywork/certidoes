@@ -761,6 +761,12 @@ async def criar_job(req: JobCreateRequest):
     if not doc:
         raise HTTPException(status_code=422, detail="Informe cpf ou cnpj")
 
+    digitos = ''.join(c for c in doc if c.isdigit())
+    if req.cpf and len(digitos) != 11:
+        raise HTTPException(status_code=422, detail=f"CPF invalido: precisa ter 11 digitos, tem {len(digitos)}")
+    if req.cnpj and len(digitos) != 14:
+        raise HTTPException(status_code=422, detail=f"CNPJ invalido: precisa ter 14 digitos, tem {len(digitos)}")
+
     from api.jobs import create_job
     params = {k: v for k, v in req.model_dump().items() if v is not None}
     result = create_job(params)
@@ -803,6 +809,44 @@ async def deletar_job(job_id: str):
     if delete_job(job_id):
         return JSONResponse(content={"ok": True})
     raise HTTPException(status_code=404, detail=f"Job {job_id} nao encontrado")
+
+
+@app.post(
+    "/api/v1/job/{job_id}/retry",
+    tags=["Jobs"],
+    summary="Reprocessar certidoes que falharam",
+)
+async def retry_job(job_id: str):
+    from api.jobs import get_job, save_job, get_redis, QUEUE_KEY
+    job = get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} nao encontrado")
+    if job["status"] != "concluido":
+        raise HTTPException(status_code=400, detail="Job ainda nao concluiu")
+
+    # Resetar certidoes que falharam
+    retried = 0
+    for cert_id, cert_data in job["certidoes"].items():
+        if cert_data["status"] in ("erro", "falha"):
+            cert_data["status"] = "pendente"
+            cert_data["inicio"] = None
+            cert_data["fim"] = None
+            cert_data["resultado"] = None
+            retried += 1
+
+    if retried == 0:
+        return JSONResponse(content={"message": "Nenhuma certidao para reprocessar", "retried": 0})
+
+    job["status"] = "na_fila"
+    job["concluidas"] = job["sucesso"]
+    job["falha"] = 0
+    save_job(job)
+
+    r = get_redis()
+    r.lpush(QUEUE_KEY, job_id)
+
+    _api_log.info(f"JOB RETRY | {job_id} | {retried} certidoes reprocessadas")
+    return JSONResponse(content={"job_id": job_id, "retried": retried, "status": "na_fila"})
 
 
 @app.get(

@@ -355,7 +355,13 @@ def _execute_certidao(job_id: str, cert_id: str, params: dict, tipo: str, docume
     # Aguardar slot
     cert_log.debug(f"job={job_id} doc={documento} aguardando slot (semaforo)")
     _update_cert(r, key, cert_id, "na_fila")
-    _chrome_sem.acquire()
+    if not _chrome_sem.acquire(timeout=300):
+        cert_log.error(f"job={job_id} doc={documento} TIMEOUT aguardando slot Chrome (300s)")
+        _update_cert(r, key, cert_id, "erro",
+                     {"status": "erro", "mensagem": "Timeout aguardando slot Chrome"},
+                     fim=datetime.now().isoformat())
+        _recount(r, key)
+        return
 
     CERT_TIMEOUT = 120  # max 2 min por certidao
 
@@ -472,7 +478,9 @@ def _update_cert(r, key, cert_id, status, resultado=None, inicio=None, fim=None)
                 pipe.execute()
                 return
         except redis_lib.WatchError:
+            time.sleep(0.05)
             continue
+    _log.warning(f"Redis WATCH exhausted after 20 retries for {key}")
 
 
 def _recount(r, key):
@@ -514,7 +522,9 @@ def _recount(r, key):
                 pipe.execute()
                 return
         except redis_lib.WatchError:
+            time.sleep(0.05)
             continue
+    _log.warning(f"Redis WATCH exhausted after 20 retries for {key}")
 
 
 # ─── Processamento de job ─────────────────────────────────
@@ -695,6 +705,7 @@ def worker_loop():
             _log.error(f"Erro no loop: {e}", exc_info=True)
             time.sleep(2)
 
+    log("Aguardando jobs em andamento terminarem...")
     r.srem("pedro:workers:active", WORKER_ID)
     log("Worker encerrado")
 
@@ -713,7 +724,8 @@ def main():
     _chrome_sem = threading.Semaphore(MAX_CHROME)
 
     def _handle_signal(sig, frame):
-        log("Parando...")
+        sig_name = signal.Signals(sig).name
+        log(f"Sinal {sig_name} recebido. Iniciando shutdown graceful...")
         _shutdown.set()
 
     signal.signal(signal.SIGINT, _handle_signal)
