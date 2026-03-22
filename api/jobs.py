@@ -1,8 +1,15 @@
 """
-Jobs — Gerenciamento de jobs no Redis.
+Jobs v2 — Arquitetura distribuida.
 
-A API cria o job, pre-preenche cache hits, e publica na fila.
-O Worker consome e executa apenas as certidoes que nao estao em cache.
+Cada certidao eh uma task independente na fila.
+Qualquer worker pega qualquer task.
+Job eh apenas um agrupador de tasks.
+
+Redis keys:
+  pedro:job:{job_id}           → JSON do job (status, certidoes, parecer)
+  pedro:queue:tasks            → lista de tasks (FIFO): "{job_id}:{cert_id}"
+  pedro:workers:active         → set de worker_ids
+  pedro:cache:{tipo}:{doc}:{cert} → resultado cacheado
 """
 import uuid
 import json
@@ -12,11 +19,11 @@ from typing import Optional
 
 import redis
 
-# ─── Redis ─────────────────────────────────────────────────
+# ─── Config ───────────────────────────────────────────────
 REDIS_URL = os.environ.get("REDIS_URL", "")
-JOB_TTL = 86400 * 3  # 3 dias
-CACHE_TTL = 86400     # 24h cache
-QUEUE_KEY = "pedro:queue:jobs"
+JOB_TTL = 86400 * 3    # 3 dias
+CACHE_TTL = 86400       # 24h
+QUEUE_KEY = "pedro:queue:tasks"
 
 _redis: Optional[redis.Redis] = None
 
@@ -26,7 +33,8 @@ def get_redis() -> redis.Redis:
     if _redis is None:
         for attempt in range(3):
             try:
-                _redis = redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=10, retry_on_timeout=True)
+                _redis = redis.from_url(REDIS_URL, decode_responses=True,
+                                        socket_timeout=10, retry_on_timeout=True)
                 _redis.ping()
                 break
             except Exception:
@@ -37,7 +45,7 @@ def get_redis() -> redis.Redis:
     return _redis
 
 
-# ─── Certidoes por tipo ───────────────────────────────────
+# ─── Certidoes por tipo ──────────────────────────────────
 
 CPF_CERTIDOES = [
     {"id": "stj-pf", "nome": "STJ Pessoa Fisica"},
@@ -70,7 +78,6 @@ CNPJ_CERTIDOES = [
     {"id": "trf1-cnpj", "nome": "TRF1 (Criminal)"},
 ]
 
-
 # ─── Helpers ──────────────────────────────────────────────
 
 def _job_key(job_id: str) -> str:
@@ -81,13 +88,12 @@ def _cache_key(tipo: str, documento: str, cert_id: str) -> str:
     return f"pedro:cache:{tipo}:{documento}:{cert_id}"
 
 
-# ─── Criar job (com cache pre-preenchido) ─────────────────
+# ─── Criar job ────────────────────────────────────────────
 
 def create_job(params: dict) -> dict:
     """
-    Cria job no Redis. Checa cache ANTES de publicar.
-    Certidoes cacheadas ja vem preenchidas — worker so executa as pendentes.
-    Se TODAS estiverem em cache, retorna 'concluido' direto (sem fila).
+    Cria job e publica cada certidao como task individual na fila.
+    Certidoes em cache ja vem preenchidas.
     """
     r = get_redis()
     job_id = str(uuid.uuid4())[:8]
@@ -95,11 +101,11 @@ def create_job(params: dict) -> dict:
     tipo = "cpf" if is_cpf else "cnpj"
     documento = params.get("cpf") or params.get("cnpj")
 
-    # Validate
+    # Validar
     digitos = ''.join(c for c in (documento or '') if c.isdigit())
     if is_cpf and len(digitos) != 11:
         return {"erro": f"CPF invalido: {len(digitos)} digitos", "job_id": None}
-    if not is_cpf and len(digitos) not in (14,):
+    if not is_cpf and len(digitos) != 14:
         return {"erro": f"CNPJ invalido: {len(digitos)} digitos", "job_id": None}
 
     # Determinar certidoes
@@ -114,8 +120,8 @@ def create_job(params: dict) -> dict:
     now = datetime.now().isoformat()
     cache_hits = 0
     certs_dict = {}
+    tasks_to_queue = []
 
-    # Pre-checar cache para cada certidao
     for cert in certidoes:
         cid = cert["id"]
         cached = r.get(_cache_key(tipo, documento, cid))
@@ -128,6 +134,7 @@ def create_job(params: dict) -> dict:
                 "status": "cache",
                 "inicio": now,
                 "fim": now,
+                "worker": None,
                 "resultado": cached_data,
             }
         else:
@@ -136,52 +143,17 @@ def create_job(params: dict) -> dict:
                 "status": "pendente",
                 "inicio": None,
                 "fim": None,
+                "worker": None,
                 "resultado": None,
             }
+            tasks_to_queue.append(f"{job_id}:{cid}")
 
     total = len(certidoes)
-    pendentes = total - cache_hits
+    pendentes = len(tasks_to_queue)
 
-    # Se TUDO em cache, retornar concluido direto
-    if pendentes == 0:
-        job = {
-            "job_id": job_id,
-            "status": "concluido",
-            "tipo": tipo,
-            "documento": documento,
-            "params": params,
-            "criado_em": now,
-            "atualizado_em": now,
-            "finalizado_em": now,
-            "total": total,
-            "concluidas": total,
-            "sucesso": cache_hits,
-            "falha": 0,
-            "certidoes": certs_dict,
-            "parecer": {
-                "resumo": f"{cache_hits} de {total} certidoes do cache (instantaneo)",
-                "situacao": "regular",
-                "sucesso": cache_hits,
-                "falha": 0,
-                "alertas": [],
-                "detalhes": [f"{c['nome']}: cache" for c in certidoes],
-            },
-        }
-        r.setex(_job_key(job_id), JOB_TTL, json.dumps(job, ensure_ascii=False))
-
-        return {
-            "job_id": job_id,
-            "status": "concluido",
-            "total": total,
-            "cache_hits": cache_hits,
-            "pendentes": 0,
-            "certidoes": [c["id"] for c in certidoes],
-        }
-
-    # Parcialmente em cache — publicar na fila para worker fazer o resto
     job = {
         "job_id": job_id,
-        "status": "na_fila",
+        "status": "concluido" if pendentes == 0 else "na_fila",
         "tipo": tipo,
         "documento": documento,
         "params": params,
@@ -194,12 +166,24 @@ def create_job(params: dict) -> dict:
         "certidoes": certs_dict,
     }
 
+    if pendentes == 0:
+        job["finalizado_em"] = now
+        job["parecer"] = {
+            "resumo": f"{cache_hits} de {total} certidoes do cache (instantaneo)",
+            "situacao": "regular",
+            "sucesso": cache_hits, "falha": 0, "alertas": [], "detalhes": [],
+        }
+
+    # Salvar job
     r.setex(_job_key(job_id), JOB_TTL, json.dumps(job, ensure_ascii=False))
-    r.lpush(QUEUE_KEY, job_id)
+
+    # Publicar tasks individuais na fila
+    if tasks_to_queue:
+        r.lpush(QUEUE_KEY, *tasks_to_queue)
 
     return {
         "job_id": job_id,
-        "status": "na_fila",
+        "status": job["status"],
         "total": total,
         "cache_hits": cache_hits,
         "pendentes": pendentes,
@@ -207,14 +191,45 @@ def create_job(params: dict) -> dict:
     }
 
 
+# ─── Retry ────────────────────────────────────────────────
+
+def retry_job(job_id: str) -> dict:
+    """Re-enfileira certidoes que falharam como tasks individuais."""
+    r = get_redis()
+    job = get_job(job_id)
+    if not job:
+        return {"erro": "Job nao encontrado"}
+    if job["status"] != "concluido":
+        return {"erro": "Job ainda nao concluiu"}
+
+    tasks_to_queue = []
+    for cert_id, cert_data in job["certidoes"].items():
+        if cert_data["status"] in ("erro", "falha"):
+            cert_data["status"] = "pendente"
+            cert_data["inicio"] = None
+            cert_data["fim"] = None
+            cert_data["worker"] = None
+            cert_data["resultado"] = None
+            tasks_to_queue.append(f"{job_id}:{cert_id}")
+
+    if not tasks_to_queue:
+        return {"retried": 0, "message": "Nenhuma certidao para reprocessar"}
+
+    job["status"] = "processando"
+    job["concluidas"] = job["sucesso"]
+    job["falha"] = 0
+    save_job(job)
+
+    r.lpush(QUEUE_KEY, *tasks_to_queue)
+    return {"retried": len(tasks_to_queue), "job_id": job_id, "status": "processando"}
+
+
 # ─── Leitura ──────────────────────────────────────────────
 
 def get_job(job_id: str) -> Optional[dict]:
     r = get_redis()
     raw = r.get(_job_key(job_id))
-    if not raw:
-        return None
-    return json.loads(raw)
+    return json.loads(raw) if raw else None
 
 
 def save_job(job: dict):

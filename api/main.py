@@ -817,33 +817,10 @@ async def deletar_job(job_id: str):
     summary="Reprocessar certidoes que falharam",
 )
 async def retry_job(job_id: str):
-    from api.jobs import get_job, save_job, get_redis, QUEUE_KEY
-    job = get_job(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} nao encontrado")
-    if job["status"] != "concluido":
-        raise HTTPException(status_code=400, detail="Job ainda nao concluiu")
-
-    # Resetar certidoes que falharam
-    retried = 0
-    for cert_id, cert_data in job["certidoes"].items():
-        if cert_data["status"] in ("erro", "falha"):
-            cert_data["status"] = "pendente"
-            cert_data["inicio"] = None
-            cert_data["fim"] = None
-            cert_data["resultado"] = None
-            retried += 1
-
-    if retried == 0:
-        return JSONResponse(content={"message": "Nenhuma certidao para reprocessar", "retried": 0})
-
-    job["status"] = "na_fila"
-    job["concluidas"] = job["sucesso"]
-    job["falha"] = 0
-    save_job(job)
-
-    r = get_redis()
-    r.lpush(QUEUE_KEY, job_id)
+    from api.jobs import retry_job as _retry
+    result = _retry(job_id)
+    if result.get("erro"):
+        raise HTTPException(status_code=400, detail=result["erro"])
 
     _api_log.info(f"JOB RETRY | {job_id} | {retried} certidoes reprocessadas")
     return JSONResponse(content={"job_id": job_id, "retried": retried, "status": "na_fila"})
