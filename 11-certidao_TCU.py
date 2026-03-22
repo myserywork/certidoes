@@ -37,9 +37,21 @@ def log(msg):
 
 
 def resolver_recaptcha_local(sitekey, url, display=":121"):
-    """Resolve reCAPTCHA v2 via audio + Whisper (100% local)."""
+    """Resolve reCAPTCHA v2: tenta 2captcha primeiro, fallback para Whisper local."""
     solver_dir = Path(__file__).parent / "infra"
     sys.path.insert(0, str(solver_dir.parent))
+
+    # Tentar 2captcha se API key disponivel
+    try:
+        from infra.twocaptcha_solver import solve_recaptcha_v2 as solve_2captcha
+        token = solve_2captcha(sitekey, url)
+        if token:
+            log("reCAPTCHA resolvido via 2captcha")
+            return token
+    except Exception as e:
+        log(f"2captcha falhou ({e}), tentando local...")
+
+    # Fallback: Whisper local
     from infra.local_captcha_solver import solve_recaptcha_v2
     return solve_recaptcha_v2(url, profile_name="tcu", display=display)
 

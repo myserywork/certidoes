@@ -45,7 +45,19 @@ def log(msg):
 
 
 def resolver_recaptcha_local(sitekey, url, timeout=45):
-    """Resolve reCAPTCHA Enterprise via stealth Chrome (100% local)."""
+    """Resolve reCAPTCHA Enterprise: tenta 2captcha primeiro, fallback stealth."""
+    # Tentar 2captcha
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from infra.twocaptcha_solver import solve_recaptcha_enterprise
+        token = solve_recaptcha_enterprise(sitekey, url, action="submit")
+        if token:
+            log("reCAPTCHA Enterprise resolvido via 2captcha")
+            return token
+    except Exception as e:
+        log(f"2captcha falhou ({e}), tentando stealth local...")
+
+    # Fallback: stealth local
     for attempt in range(1, MAX_RETRIES + 1):
         ns_idx = (attempt - 1) % len(NAMESPACES)
         ns = NAMESPACES[ns_idx]

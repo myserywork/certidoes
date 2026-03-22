@@ -36,9 +36,19 @@ def log(msg):
 
 
 def resolver_hcaptcha_local(url, display=":121"):
-    """Resolve hCaptcha via CLIP visual classification (100% local)."""
+    """Resolve hCaptcha: tenta 2captcha primeiro, fallback CLIP local."""
     solver_dir = Path(__file__).parent / "infra"
     sys.path.insert(0, str(solver_dir.parent))
+
+    try:
+        from infra.twocaptcha_solver import solve_hcaptcha as solve_2captcha
+        token = solve_2captcha(HCAPTCHA_SITEKEY, url)
+        if token:
+            log("hCaptcha resolvido via 2captcha")
+            return token
+    except Exception as e:
+        log(f"2captcha falhou ({e}), tentando CLIP local...")
+
     from infra.hcaptcha_solver import solve_hcaptcha
     return solve_hcaptcha(url, display=display)
 

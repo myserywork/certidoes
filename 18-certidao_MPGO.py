@@ -144,8 +144,23 @@ def emitir_certidao_mpgo(cpf_cnpj: str) -> dict:
         if not csrf_token:
             return {"status": "erro", "mensagem": "CSRF token não encontrado"}
 
-        # 2. Resolver reCAPTCHA v2 via stealth (100% local)
-        token, browser_csrf, browser_cookies = resolver_recaptcha_local(MPGO_URL, display=DISPLAY)
+        # 2. Resolver reCAPTCHA v2: tenta 2captcha, fallback stealth
+        token = None
+        browser_csrf = ""
+        browser_cookies = ""
+
+        try:
+            sys.path.insert(0, str(Path(__file__).parent))
+            from infra.twocaptcha_solver import solve_recaptcha_v2
+            token = solve_recaptcha_v2(SITEKEY, MPGO_URL)
+            if token:
+                log("reCAPTCHA resolvido via 2captcha")
+        except Exception as e:
+            log(f"2captcha falhou ({e}), tentando stealth...")
+
+        if not token:
+            token, browser_csrf, browser_cookies = resolver_recaptcha_local(MPGO_URL, display=DISPLAY)
+
         if not token:
             return {"status": "erro", "mensagem": "Falha ao resolver reCAPTCHA"}
         
