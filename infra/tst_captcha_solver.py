@@ -29,6 +29,7 @@ import subprocess
 import sys
 import time
 import base64
+import platform
 from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "tst_captcha_solver.js"
@@ -172,13 +173,13 @@ def transcribe_audio(audio_path: str, model_name: str = "medium") -> str:
     
     try:
         result = subprocess.run(
-            ["python3", "-c", f"""
+            [sys.executable, "-c", f"""
 import whisper
 model = whisper.load_model("{model_name}")
 result = model.transcribe("{audio_path}", language="pt")
 print(result["text"])
 """],
-            capture_output=True, timeout=60, cwd=os.environ.get("HOME", "/root"),
+            capture_output=True, timeout=60, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         text = result.stdout.decode().strip()
         stderr = result.stderr.decode(errors="replace")
@@ -209,7 +210,7 @@ def solve_tst_single(cpf_cnpj: str, display: str = ":121", ns: str = "",
 
     _home = os.environ.get("HOME", "/root")
     _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-    if ns:
+    if ns and platform.system() != "Windows":
         cmd = [
             "sudo", "-n", "ip", "netns", "exec", ns,
             "env", f"DISPLAY={display}", f"HOME={_home}",
@@ -222,7 +223,7 @@ def solve_tst_single(cpf_cnpj: str, display: str = ":121", ns: str = "",
     try:
         proc = subprocess.Popen(
             cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=env, cwd=os.environ.get("HOME", "/root"),
+            env=env, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         
         start = time.time()

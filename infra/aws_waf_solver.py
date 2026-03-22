@@ -13,6 +13,7 @@ import os
 import subprocess
 import sys
 import time
+import platform
 from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "aws_waf_audio_solver.js"
@@ -88,7 +89,7 @@ else:
             ],
             capture_output=True,
             timeout=30,
-            cwd=os.environ.get("HOME", "/root"),
+            cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         text = result.stdout.decode().strip()
         if text:
@@ -117,7 +118,7 @@ def solve_aws_waf_single(url: str, display: str = ":121", ns: str = "", timeout:
 
     _home = os.environ.get("HOME", "/root")
     _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-    if ns:
+    if ns and platform.system() != "Windows":
         cmd = [
             "sudo", "-n", "ip", "netns", "exec", ns,
             "env", f"DISPLAY={display}", f"HOME={_home}",
@@ -134,7 +135,7 @@ def solve_aws_waf_single(url: str, display: str = ":121", ns: str = "", timeout:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env,
-            cwd=os.environ.get("HOME", "/root"),
+            cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         start = time.time()

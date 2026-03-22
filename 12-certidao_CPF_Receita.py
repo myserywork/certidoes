@@ -184,11 +184,12 @@ def consultar_cpf(cpf: str, data_nascimento: str) -> dict:
             # Pode ser erro ou página vazia
             log("Resultado sem dados extraíveis")
             # Salvar pra debug
-            with open("/tmp/cpf_rf_debug.html", "w") as f:
+            debug_path = os.path.join(tempfile.gettempdir(), "cpf_rf_debug.html")
+            with open(debug_path, "w") as f:
                 f.write(resultado_html)
             return {
                 "status": "erro",
-                "mensagem": "Sem dados no resultado (ver /tmp/cpf_rf_debug.html)",
+                "mensagem": f"Sem dados no resultado (ver {debug_path})",
                 "url_final": resp.url,
             }
 

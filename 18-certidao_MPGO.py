@@ -49,7 +49,7 @@ def resolver_recaptcha_local(url, display=":121"):
         proc = subprocess.Popen(
             ["node", str(solver_js)],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=env, cwd=os.environ.get("HOME", "/root"),
+            env=env, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         
         import json as _json
@@ -76,14 +76,14 @@ def resolver_recaptcha_local(url, display=":121"):
                 audio_file = msg.get("audio_file", "")
                 log(f"Audio challenge: {audio_file}")
                 r = subprocess.run(
-                    ["python3", "-c", f"""
+                    [sys.executable, "-c", f"""
 import whisper, re
 m = whisper.load_model("base", device="cuda")
 r = m.transcribe("{audio_file}", language="en", fp16=True)
 t = re.sub(r'[^a-z0-9 ]', '', r["text"].strip().lower()).strip()
 print(t)
 """],
-                    capture_output=True, timeout=30, cwd=os.environ.get("HOME", "/root"),
+                    capture_output=True, timeout=30, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
                 )
                 answer = r.stdout.decode().strip()
                 log(f"Whisper answer: '{answer}'")

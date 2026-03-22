@@ -19,6 +19,7 @@ import subprocess
 import sys
 import time
 import re
+import platform
 from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "hcaptcha_visual_solver.js"
@@ -201,7 +202,7 @@ def identify_object_clip(image_path: str) -> str:
     
     try:
         result = subprocess.run(
-            ["python3", "-c", f"""
+            [sys.executable, "-c", f"""
 import torch, json, sys
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
@@ -234,7 +235,7 @@ for i in range(0, len(labels), 50):
 
 print(json.dumps({{"label": best_label, "score": best_score}}))
 """],
-            capture_output=True, timeout=45, cwd=os.environ.get("HOME", "/root"),
+            capture_output=True, timeout=45, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         
         stdout = result.stdout.decode().strip()
@@ -274,7 +275,7 @@ def classify_cells_direct(prompt: str, image_paths: list) -> list:
     
     try:
         result = subprocess.run(
-            ["python3", "-c", f"""
+            [sys.executable, "-c", f"""
 import torch, json, sys
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
@@ -313,7 +314,7 @@ if not selected:
 
 print(json.dumps(selected))
 """],
-            capture_output=True, timeout=60, cwd=os.environ.get("HOME", "/root"),
+            capture_output=True, timeout=60, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         stdout = result.stdout.decode().strip()
@@ -404,7 +405,7 @@ def classify_cells_against_labels(image_paths: list, candidate_labels: list) -> 
     
     try:
         result = subprocess.run(
-            ["python3", "-c", f"""
+            [sys.executable, "-c", f"""
 import torch, json, sys
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
@@ -465,7 +466,7 @@ elif not selected:
 
 print(json.dumps(selected))
 """],
-            capture_output=True, timeout=60, cwd=os.environ.get("HOME", "/root"),
+            capture_output=True, timeout=60, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         stdout = result.stdout.decode().strip()
@@ -490,7 +491,7 @@ def classify_cells_by_similarity(example_path: str, image_paths: list) -> list:
     
     try:
         result = subprocess.run(
-            ["python3", "-c", f"""
+            [sys.executable, "-c", f"""
 import torch, json, sys
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
@@ -538,7 +539,7 @@ elif not selected:
 
 print(json.dumps(selected))
 """],
-            capture_output=True, timeout=60, cwd=os.environ.get("HOME", "/root"),
+            capture_output=True, timeout=60, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         stdout = result.stdout.decode().strip()
@@ -588,7 +589,7 @@ def solve_hcaptcha_single(url: str, display: str = ":121", ns: str = "", timeout
 
     _home = os.environ.get("HOME", "/root")
     _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-    if ns:
+    if ns and platform.system() != "Windows":
         cmd = [
             "sudo", "-n", "ip", "netns", "exec", ns,
             "env", f"DISPLAY={display}", f"HOME={_home}",
@@ -601,7 +602,7 @@ def solve_hcaptcha_single(url: str, display: str = ":121", ns: str = "", timeout
     try:
         proc = subprocess.Popen(
             cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=env, cwd=os.environ.get("HOME", "/root"),
+            env=env, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         start = time.time()

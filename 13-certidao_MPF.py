@@ -14,6 +14,7 @@ import sys
 import time
 import tempfile
 import subprocess
+import platform
 import requests
 from pathlib import Path
 from flask import Flask, request as flask_request, jsonify
@@ -31,7 +32,7 @@ TURNSTILE_SITEKEY = "0x4AAAAAACMhejJkLsBWVaMb"
 
 # Stealth config
 DISPLAY = os.environ.get("DISPLAY", ":120")
-SOURCE_PROFILE = Path("/tmp/chrome_profile")
+SOURCE_PROFILE = Path(tempfile.gettempdir()) / "chrome_profile"
 PROFILE_DIR = Path(__file__).parent / "infra" / "profiles" / "mpf"
 CHROME_PATH = "/usr/bin/google-chrome"
 
@@ -59,10 +60,10 @@ def log(msg):
 
 def _kill_orphan_chrome():
     """Matar Chrome órfão usando profile mpf (evita lock)."""
-    subprocess.run(
-        ["pkill", "-9", "-f", "profiles/mpf"],
-        capture_output=True, timeout=5,
-    )
+    if platform.system() == "Windows":
+        subprocess.run(["taskkill", "/F", "/IM", "chrome.exe", "/T"], capture_output=True, timeout=10)
+    else:
+        subprocess.run(["pkill", "-9", "-f", "profiles/mpf"], capture_output=True, timeout=5)
     time.sleep(0.5)
 
 
@@ -100,7 +101,7 @@ def resolver_turnstile_stealth(display=None, ns="", timeout=55):
     # Montar comando com ou sem namespace
     _home = os.environ.get("HOME", "/root")
     _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-    if ns:
+    if ns and platform.system() != "Windows":
         cmd = [
             "sudo", "-n", "ip", "netns", "exec", ns,
             "env", f"DISPLAY={display}", f"HOME={_home}",
@@ -116,7 +117,7 @@ def resolver_turnstile_stealth(display=None, ns="", timeout=55):
             capture_output=True,
             timeout=timeout,
             env=env,
-            cwd=os.environ.get("HOME", "/root"),
+            cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         stderr_out = proc.stderr.decode(errors="replace")

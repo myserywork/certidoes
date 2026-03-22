@@ -25,6 +25,7 @@ import sys
 import time
 import subprocess
 import tempfile
+import platform
 from pathlib import Path
 import requests
 from flask import Flask, request as flask_request, jsonify
@@ -60,7 +61,7 @@ def whisper_transcribe(audio_path: str) -> str:
 
     try:
         result = subprocess.run(
-            ["python3", "-c", f"""
+            [sys.executable, "-c", f"""
 import whisper, re, sys
 
 model = whisper.load_model("medium", device="cuda")
@@ -140,7 +141,7 @@ if not answer:
 
 print(answer)
 """],
-            capture_output=True, timeout=45, cwd=os.environ.get("HOME", "/root"),
+            capture_output=True, timeout=45, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         text = result.stdout.decode().strip()
         stderr_out = result.stderr.decode()
@@ -173,7 +174,7 @@ def run_stf_solver(cpf_cnpj: str, tipo: str = "distribuicao", nome: str = "",
 
     _home = os.environ.get("HOME", "/root")
     _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-    if ns:
+    if ns and platform.system() != "Windows":
         cmd = [
             "sudo", "-n", "ip", "netns", "exec", ns,
             "env", f"DISPLAY={display}", f"HOME={_home}",
@@ -188,7 +189,7 @@ def run_stf_solver(cpf_cnpj: str, tipo: str = "distribuicao", nome: str = "",
     try:
         proc = subprocess.Popen(
             cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=env, cwd=os.environ.get("HOME", "/root"),
+            env=env, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         result = {"status": "erro", "mensagem": "Timeout"}

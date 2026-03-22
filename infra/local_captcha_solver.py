@@ -13,11 +13,13 @@ import os
 import subprocess
 import sys
 import time
+import tempfile
+import platform
 from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "recaptcha_audio_solver.js"
 PROFILE_BASE = Path(__file__).parent / "profiles"
-SOURCE_PROFILE = Path("/tmp/chrome_profile")
+SOURCE_PROFILE = Path(tempfile.gettempdir()) / "chrome_profile"
 
 # Namespaces para rotação
 NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
@@ -49,7 +51,7 @@ print(text)
             ],
             capture_output=True,
             timeout=30,
-            cwd=os.environ.get("HOME", "/root"),
+            cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
         text = result.stdout.decode().strip()
         if text:
@@ -67,7 +69,10 @@ print(text)
 
 
 def _kill_orphan(profile_name: str):
-    subprocess.run(["pkill", "-9", "-f", f"profiles/{profile_name}"], capture_output=True, timeout=5)
+    if platform.system() == "Windows":
+        subprocess.run(["taskkill", "/F", "/IM", "chrome.exe", "/T"], capture_output=True, timeout=10)
+    else:
+        subprocess.run(["pkill", "-9", "-f", f"profiles/{profile_name}"], capture_output=True, timeout=5)
     time.sleep(0.3)
 
 
@@ -105,7 +110,7 @@ def solve_recaptcha_v2_single(
 
     _home = os.environ.get("HOME", "/root")
     _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-    if ns:
+    if ns and platform.system() != "Windows":
         cmd = [
             "sudo", "-n", "ip", "netns", "exec", ns,
             "env", f"DISPLAY={display}", f"HOME={_home}",
@@ -122,7 +127,7 @@ def solve_recaptcha_v2_single(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env,
-            cwd=os.environ.get("HOME", "/root"),
+            cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", ".")),
         )
 
         start = time.time()

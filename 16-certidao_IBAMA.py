@@ -13,6 +13,7 @@ import time
 import tempfile
 import re
 import subprocess
+import platform
 from pathlib import Path
 import requests
 from flask import Flask, request as flask_request, jsonify
@@ -67,7 +68,7 @@ def resolver_recaptcha_local(sitekey, url, timeout=45):
 
         _home = os.environ.get("HOME", "/root")
         _node_path = os.environ.get("NODE_PATH", "/root/node_modules")
-        if ns:
+        if ns and platform.system() != "Windows":
             cmd = [
                 "sudo", "-n", "ip", "netns", "exec", ns,
                 "env", f"DISPLAY={DISPLAY}", f"HOME={_home}",
@@ -84,7 +85,7 @@ def resolver_recaptcha_local(sitekey, url, timeout=45):
 
         try:
             proc = subprocess.run(
-                cmd, capture_output=True, timeout=timeout, env=env, cwd=os.environ.get("HOME", "/root")
+                cmd, capture_output=True, timeout=timeout, env=env, cwd=os.environ.get("HOME", os.environ.get("USERPROFILE", "."))
             )
             stdout = proc.stdout.decode().strip()
             stderr = proc.stderr.decode(errors="replace")

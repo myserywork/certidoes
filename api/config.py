@@ -23,16 +23,16 @@ MAX_WORKERS = int(os.environ.get("MAX_WORKERS", "4"))
 # Timeout padrao por request (segundos)
 REQUEST_TIMEOUT = int(os.environ.get("REQUEST_TIMEOUT", "120"))
 
-# ─── Adaptacoes WSL2 (root em vez de ramza) ───────────────
-# Os scripts originais referenciam /home/ramza em varios locais.
-# No WSL2 rodamos como root. Setamos as variaveis de ambiente
-# para que os subprocessos (Node/Puppeteer) funcionem.
+# ─── Adaptacoes de ambiente ────────────────────────────────
 if IS_LINUX:
     HOME_DIR = os.environ.get("HOME", "/root")
     NODE_PATH = os.environ.get("NODE_PATH", f"{HOME_DIR}/node_modules")
-
-    # Garantir variaveis de ambiente para subprocessos
     os.environ.setdefault("HOME", HOME_DIR)
     os.environ.setdefault("NODE_PATH", NODE_PATH)
     os.environ.setdefault("DISPLAY", DISPLAY)
     os.environ.setdefault("CAPTCHA_DISPLAY", DISPLAY)
+else:
+    # Windows: NODE_PATH aponta para node_modules na pasta do projeto
+    HOME_DIR = os.environ.get("USERPROFILE", str(PROJECT_ROOT))
+    NODE_PATH = os.environ.get("NODE_PATH", str(PROJECT_ROOT / "node_modules"))
+    os.environ.setdefault("NODE_PATH", NODE_PATH)
