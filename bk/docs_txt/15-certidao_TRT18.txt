@@ -1,0 +1,11 @@
+# Certidão TRT18 - Ações Trabalhistas (Goiás)
+# Tipos: andamento, arquivadas, objeto_pe
+
+# Ações em andamento (padrão)
+curl -X POST http://localhost:5015/certidao -H "Content-Type: application/json" -d '{"cpf_cnpj": "13683315725", "tipo": "andamento"}'
+
+# Ações arquivadas
+curl -X POST http://localhost:5015/certidao -H "Content-Type: application/json" -d '{"cpf_cnpj": "13683315725", "tipo": "arquivadas"}'
+
+# Objeto e pé
+curl -X POST http://localhost:5015/certidao -H "Content-Type: application/json" -d '{"cpf_cnpj": "26546054000140", "tipo": "objeto_pe"}'

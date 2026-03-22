@@ -1,0 +1,16 @@
+# Certidão TCU - Tribunal de Contas da União - Nada Consta
+# Método: HTTP puro + 2captcha (reCAPTCHA v2)
+# Flask API na porta 5011
+
+# Consulta CPF
+curl -X POST http://localhost:5011/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725"}'
+
+# Consulta CNPJ
+curl -X POST http://localhost:5011/certidao -H "Content-Type: application/json" -d '{"cnpj": "00000000000191"}'
+
+# CLI direto
+python3 11-certidao_TCU.py --cpf 13683315725
+python3 11-certidao_TCU.py --cnpj 00000000000191
+
+# Rodar servidor Flask
+python3 11-certidao_TCU.py --serve --port 5011

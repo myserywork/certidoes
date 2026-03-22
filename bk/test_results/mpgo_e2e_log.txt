@@ -1,0 +1,19 @@
+=== MPGO End-to-End Test ===
+Started: Fri Feb 20 11:34:35 PM -03 2026
+[MPGO][23:34:35] GET página MPGO para CNPJ: 33000167000101
+[MPGO][23:34:35] CSRF token: EcyxsUK5L7PJqsEZ1V9nZY1sHUp1C4DkQraOsCoR...
+[MPGO][23:34:46] POST emitir certidão para 33.000.167/0001-01...
+[MPGO][23:34:47] Response: 200 | Content-Type: application/pdf | Size: 85528
+[MPGO][23:34:47] PDF salvo: /tmp/mpgo_j8jxbkuw/certidao_mpgo_33000167000101.pdf (85528 bytes)
+[MPGO][23:34:48] Upload OK: http://tmpfiles.org/25343368/certidao_mpgo_33000167000101.pdf
+{
+  "status": "sucesso",
+  "tipo_certidao": "certidao_mpgo",
+  "cpf_cnpj": "33000167000101",
+  "link": "http://tmpfiles.org/25343368/certidao_mpgo_33000167000101.pdf",
+  "pdf_size": 85528,
+  "metodo": "local_audio_whisper"
+}
+
+Finished: Fri Feb 20 11:34:48 PM -03 2026
+DONE

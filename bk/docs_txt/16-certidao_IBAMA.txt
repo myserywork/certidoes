@@ -1,0 +1,17 @@
+# Certidão Negativa de Débito IBAMA
+# Método: HTTP puro + 2captcha (reCAPTCHA v2)
+# Flask API na porta 5016
+# Sistema PHP legado (FormDin3)
+
+# Consulta CPF
+curl -X POST http://localhost:5016/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725"}'
+
+# Consulta CNPJ
+curl -X POST http://localhost:5016/certidao -H "Content-Type: application/json" -d '{"cnpj": "00000000000191"}'
+
+# CLI direto
+python3 16-certidao_IBAMA.py --cpf 13683315725
+python3 16-certidao_IBAMA.py --cnpj 00000000000191
+
+# Rodar servidor Flask
+python3 16-certidao_IBAMA.py --serve --port 5016

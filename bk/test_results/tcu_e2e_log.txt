@@ -1,0 +1,41 @@
+=== TCU End-to-End Test ===
+Started: Fri Feb 20 11:13:56 PM -03 2026
+[TCU][23:13:56] GET página TCU para CNPJ: 00414607000118
+[TCU][23:13:56] ViewState: j_id1... | qtdAcessos: 16765130
+[LCAP][23:13:56] [Tentativa 1/10] NS=host
+[LCAP][23:13:57] [host] Abrindo https://contas.tcu.gov.br/certidao/Web/Certidao/NadaConsta/home.faces
+[LCAP][23:14:08] [host] Audio challenge: /tmp/recaptcha_audio_1771640047713.mp3
+[LCAP][23:14:08] Whisper transcrevendo: /tmp/recaptcha_audio_1771640047713.mp3
+[LCAP][23:14:36] Whisper resultado: 'the dark product between'
+[LCAP][23:14:36] [host] Resposta enviada: 'the dark product between'
+[LCAP][23:14:40] [host] Solved via audio! 2212 chars
+[LCAP][23:14:40]   [RCAUDIO][23:13:57] Launching stealth Chrome...
+[LCAP][23:14:40]   [RCAUDIO][23:13:57] Navigating to https://contas.tcu.gov.br/certidao/Web/Certidao/NadaConsta/home.faces
+[LCAP][23:14:40]   [RCAUDIO][23:13:59] Page loaded
+[LCAP][23:14:40]   [RCAUDIO][23:14:01] Found reCAPTCHA iframe, clicking checkbox...
+[LCAP][23:14:40]   [RCAUDIO][23:14:04] Challenge appeared, looking for audio button...
+[LCAP][23:14:40]   [RCAUDIO][23:14:05] Clicked audio button
+[LCAP][23:14:40]   [RCAUDIO][23:14:07] Audio URL: https://www.google.com/recaptcha/api2/payload/audio.mp3?p=06AFcWeA7P3ZVj6zVSGVOr...
+[LCAP][23:14:40]   (node:3134117) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+[LCAP][23:14:40]   (Use `node --trace-warnings ...` to show where the warning was created)
+[LCAP][23:14:40]   [RCAUDIO][23:14:08] Audio downloaded: /tmp/recaptcha_audio_1771640047713.mp3
+[LCAP][23:14:40]   [RCAUDIO][23:14:36] Whisper answer: "the dark product between"
+[LCAP][23:14:40]   [RCAUDIO][23:14:37] Answer typed
+[LCAP][23:14:40]   [RCAUDIO][23:14:37] Clicked verify
+[LCAP][23:14:40]   [RCAUDIO][23:14:40] Solved! Token: 2212 chars
+[LCAP][23:14:40] Sucesso na tentativa 1 via host
+[TCU][23:14:40] POST formulário com token reCAPTCHA...
+[TCU][23:14:46] SUCESSO! Tipo: consta | Nome:  | Código: 
+[TCU][23:14:47] Upload OK: http://tmpfiles.org/25341399/certidao_tcu_00414607000118.pdf
+{
+  "status": "sucesso",
+  "tipo_certidao": "consta",
+  "nome": "",
+  "cpf_cnpj": "00414607000118",
+  "codigo_controle": "",
+  "link": "http://tmpfiles.org/25341399/certidao_tcu_00414607000118.pdf",
+  "resultado": "<!DOCTYPE html >\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta charset=\"UTF-8\" />\n<title>Certid&atilde;o Negativa de Processo</title>\n<link class=\"component\" href=\"/certidao/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss/DATB/eAELXT5DOhSIAQ!sA18_.faces\" rel=\"stylesheet\" type=\"text/css\" /><link class=\"component\" href=\"/certidao/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_classes.xcss/DATB/eAELXT5DOhSIAQ!sA18_.faces\" media=\"rich-extended-skinning\" rel=\"stylesheet\" type=\"text/css\" /><script type=\"text/javascript\">window.RICH_FACES_EXTENDED_SKINNING_ON=true;</script><script src=\"/certidao/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/skinning.js.faces\" type=\"text/javascript\"></script><link href=\"/certidao/Web/Shared/estilos/corporativo.css\" rel=\"stylesheet\" media=\"screen\" />\n<script src=\"/certidao/Web/Shared/scripts/corporativo.js\" type=\"text/javascript\"></script>\n</head>\n<body>\n\t<blockquote>\n\t\t<h1>Certid&atilde;o Negativa de Processo"
+}
+
+Finished: Fri Feb 20 11:14:47 PM -03 2026
+DONE

@@ -1,0 +1,17 @@
+# Certidão STF - Supremo Tribunal Federal
+# Método: 2captcha (AWS WAF) + fallback nodriver
+# Flask API na porta 5014
+# NOTA: STF tem AWS WAF Captcha - mais complexo que os outros
+
+# Consulta CPF (método padrão: 2captcha -> fallback nodriver)
+curl -X POST http://localhost:5014/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725"}'
+
+# Forçar nodriver (browser real)
+curl -X POST http://localhost:5014/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725", "metodo": "nodriver"}'
+
+# CLI direto
+python3 14-certidao_STF.py --cpf 13683315725
+python3 14-certidao_STF.py --cpf 13683315725 --metodo nodriver --display :120
+
+# Rodar servidor Flask
+python3 14-certidao_STF.py --serve --port 5014

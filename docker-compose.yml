@@ -1,0 +1,112 @@
+# PEDRO PROJECT — Docker Compose
+#
+# === COMANDOS ===
+#
+# Subir API + Worker GPU:
+#   docker compose up -d
+#
+# Subir so API:
+#   docker compose up -d api
+#
+# Subir worker com VPN:
+#   docker compose --profile vpn up -d worker-vpn
+#
+# Escalar workers:
+#   docker compose up -d --scale worker-gpu=3
+#
+# Ver logs:
+#   docker compose logs -f worker-gpu
+#
+# Em outra maquina (so worker apontando pro mesmo Redis):
+#   REDIS_URL=redis://... MAX_CHROME=10 docker compose up -d worker-gpu
+
+x-redis: &redis-url
+  REDIS_URL: ${REDIS_URL:?Configure REDIS_URL no .env}
+
+services:
+
+  # ─── API ────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      <<: *redis-url
+    restart: unless-stopped
+    volumes:
+      - downloads:/app/api/downloads
+      - logs:/app/logs
+
+  # ─── Worker GPU ─────────────────────────────────────────
+  worker-gpu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    environment:
+      <<: *redis-url
+      MAX_CHROME: ${MAX_CHROME:-6}
+      WORKER_ID: ${WORKER_ID:-}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    shm_size: '4gb'
+    restart: unless-stopped
+    volumes:
+      - downloads:/app/api/downloads
+      - logs:/app/logs
+
+  # ─── Worker GPU + VPN ──────────────────────────────────
+  worker-vpn:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    environment:
+      <<: *redis-url
+      MAX_CHROME: ${MAX_CHROME:-6}
+      WORKER_ID: ${WORKER_ID:-}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    shm_size: '4gb'
+    restart: unless-stopped
+    volumes:
+      - downloads:/app/api/downloads
+      - logs:/app/logs
+      - ./vpn:/etc/wireguard:ro
+    profiles:
+      - vpn
+
+  # ─── Worker SEM GPU ────────────────────────────────────
+  worker-nogpu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker-nogpu
+    environment:
+      <<: *redis-url
+      MAX_CHROME: ${MAX_CHROME:-8}
+      WORKER_ID: ${WORKER_ID:-}
+    shm_size: '2gb'
+    restart: unless-stopped
+    volumes:
+      - downloads:/app/api/downloads
+      - logs:/app/logs
+    profiles:
+      - nogpu
+
+volumes:
+  downloads:
+  logs:

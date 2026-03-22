@@ -1,0 +1,182 @@
+=== hCaptcha CPF Receita Test ===
+Started: Fri Feb 20 11:05:05 PM -03 2026
+--- Testing hcaptcha_solver.py directly ---
+[HCAP][23:05:06] [Tentativa 1/6] NS=host
+[HCAP][23:05:06] [host] Abrindo https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:05:21] [host] Challenge: 'Toque em itens comumente usados com o item mostrado', 9 images
+[HCAP][23:05:21] CLIP classificando 9 imagens para: 'Toque em itens comumente usados com o item mostrado'
+[HCAP][23:05:21] Target object: 'toque em itens comumente usados com o item mostrado'
+[HCAP][23:05:40]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:05:40]   img 0: score=0.236
+[HCAP][23:05:40]   img 1: score=0.286
+[HCAP][23:05:40]   img 2: score=0.162
+[HCAP][23:05:40]   img 3: score=0.245
+[HCAP][23:05:40]   img 4: score=0.230
+[HCAP][23:05:40]   img 5: score=0.234
+[HCAP][23:05:40]   img 6: score=0.413
+[HCAP][23:05:40]   img 7: score=0.206
+[HCAP][23:05:40]   img 8: score=0.221
+[HCAP][23:05:40] CLIP selected indices: [6, 1, 3]
+[HCAP][23:05:40] [host] Sent clicks: [6, 1, 3]
+[HCAP][23:05:47] [host] failed: no_token_after_submit
+[HCAP][23:05:47]   [HCVIS][23:05:06] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:05:47]   [HCVIS][23:05:12] Clicked checkbox
+[HCAP][23:05:47]   [HCVIS][23:05:16] Prompt: "Toque em itens comumente usados com o item mostrado"
+[HCAP][23:05:47]   [HCVIS][23:05:16] Grid cells: 9
+[HCAP][23:05:47]   [HCVIS][23:05:21] Screenshots: 9 images saved
+[HCAP][23:05:47]   [HCVIS][23:05:40] Clicking cells: 6,1,3
+[HCAP][23:05:47]   [HCVIS][23:05:42] Clicked submit
+[HCAP][23:05:47]   [HCVIS][23:05:47] Failed - no token after submit
+[HCAP][23:05:47] Falhou via host, rotacionando em 1s...
+[HCAP][23:05:48] [Tentativa 2/6] NS=ns_t0
+[HCAP][23:05:48] [ns_t0] Abrindo https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:06:04] [ns_t0] Challenge: 'Toque em itens comumente usados com o item mostrado', 9 images
+[HCAP][23:06:04] CLIP classificando 9 imagens para: 'Toque em itens comumente usados com o item mostrado'
+[HCAP][23:06:04] Target object: 'toque em itens comumente usados com o item mostrado'
+[HCAP][23:06:09]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:06:09]   img 0: score=0.385
+[HCAP][23:06:09]   img 1: score=0.331
+[HCAP][23:06:09]   img 2: score=0.552
+[HCAP][23:06:09]   img 3: score=0.144
+[HCAP][23:06:09]   img 4: score=0.127
+[HCAP][23:06:09]   img 5: score=0.431
+[HCAP][23:06:09]   img 6: score=0.301
+[HCAP][23:06:09]   img 7: score=0.238
+[HCAP][23:06:09]   img 8: score=0.180
+[HCAP][23:06:09] CLIP selected indices: [2]
+[HCAP][23:06:09] [ns_t0] Sent clicks: [2]
+[HCAP][23:06:15] [ns_t0] failed: no_token_after_submit
+[HCAP][23:06:15]   [HCVIS][23:05:48] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:06:15]   [HCVIS][23:06:00] Clicked checkbox
+[HCAP][23:06:15]   [HCVIS][23:06:04] Prompt: "Toque em itens comumente usados com o item mostrado"
+[HCAP][23:06:15]   [HCVIS][23:06:04] Grid cells: 9
+[HCAP][23:06:15]   [HCVIS][23:06:04] Screenshots: 9 images saved
+[HCAP][23:06:15]   [HCVIS][23:06:09] Clicking cells: 2
+[HCAP][23:06:15]   [HCVIS][23:06:10] Clicked submit
+[HCAP][23:06:15]   [HCVIS][23:06:15] Failed - no token after submit
+[HCAP][23:06:15] Falhou via ns_t0, rotacionando em 2s...
+[HCAP][23:06:17] [Tentativa 3/6] NS=ns_t1
+[HCAP][23:06:17] [ns_t1] Abrindo https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:06:31] [ns_t1] Challenge: 'Toque em itens comumente usados com o item mostrado', 9 images
+[HCAP][23:06:31] CLIP classificando 9 imagens para: 'Toque em itens comumente usados com o item mostrado'
+[HCAP][23:06:31] Target object: 'toque em itens comumente usados com o item mostrado'
+[HCAP][23:07:32] CLIP timeout!
+[HCAP][23:07:32] [ns_t1] Read erro: [Errno 32] Broken pipe
+[HCAP][23:07:32]   [HCVIS][23:06:17] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:07:32]   [HCVIS][23:06:27] Clicked checkbox
+[HCAP][23:07:32]   [HCVIS][23:06:31] Prompt: "Toque em itens comumente usados com o item mostrado"
+[HCAP][23:07:32]   [HCVIS][23:06:31] Grid cells: 9
+[HCAP][23:07:32]   [HCVIS][23:06:31] Screenshots: 9 images saved
+[HCAP][23:07:32] Falhou via ns_t1, rotacionando em 3s...
+[HCAP][23:07:35] [Tentativa 4/6] NS=ns_t2
+[HCAP][23:07:35] [ns_t2] Abrindo https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:07:45] [ns_t2] Challenge: 'Selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo', 9 images
+[HCAP][23:07:45] CLIP classificando 9 imagens para: 'Selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo'
+[HCAP][23:07:45] Target object: 'selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo'
+[HCAP][23:08:13]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:08:13]   img 0: score=0.542
+[HCAP][23:08:13]   img 1: score=0.466
+[HCAP][23:08:13]   img 2: score=0.395
+[HCAP][23:08:13]   img 3: score=0.282
+[HCAP][23:08:13]   img 4: score=0.269
+[HCAP][23:08:13]   img 5: score=0.259
+[HCAP][23:08:13]   img 6: score=0.279
+[HCAP][23:08:13]   img 7: score=0.242
+[HCAP][23:08:13]   img 8: score=0.390
+[HCAP][23:08:13] CLIP selected indices: [0, 1]
+[HCAP][23:08:13] [ns_t2] Sent clicks: [0, 1]
+[HCAP][23:08:19] [ns_t2] failed: no_token_after_submit
+[HCAP][23:08:19]   [HCVIS][23:07:35] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:08:19]   [HCVIS][23:07:41] Clicked checkbox
+[HCAP][23:08:19]   [HCVIS][23:07:45] Prompt: "Selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo"
+[HCAP][23:08:19]   [HCVIS][23:07:45] Grid cells: 9
+[HCAP][23:08:19]   [HCVIS][23:07:45] Screenshots: 9 images saved
+[HCAP][23:08:19]   [HCVIS][23:08:13] Clicking cells: 0,1
+[HCAP][23:08:19]   [HCVIS][23:08:14] Clicked submit
+[HCAP][23:08:19]   [HCVIS][23:08:19] Failed - no token after submit
+[HCAP][23:08:19] Falhou via ns_t2, rotacionando em 3s...
+[HCAP][23:08:22] [Tentativa 5/6] NS=ns_t3
+[HCAP][23:08:22] [ns_t3] Abrindo https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:08:47] [ns_t3] Challenge: 'Selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo', 9 images
+[HCAP][23:08:47] CLIP classificando 9 imagens para: 'Selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo'
+[HCAP][23:08:47] Target object: 'selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo'
+[HCAP][23:09:16]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:09:16]   img 0: score=0.364
+[HCAP][23:09:16]   img 1: score=0.558
+[HCAP][23:09:16]   img 2: score=0.605
+[HCAP][23:09:16]   img 3: score=0.541
+[HCAP][23:09:16]   img 4: score=0.731
+[HCAP][23:09:16]   img 5: score=0.711
+[HCAP][23:09:16]   img 6: score=0.793
+[HCAP][23:09:16]   img 7: score=0.228
+[HCAP][23:09:16]   img 8: score=0.647
+[HCAP][23:09:16] CLIP selected indices: [1, 2, 4, 5, 6, 8]
+[HCAP][23:09:16] [ns_t3] Sent clicks: [1, 2, 4, 5, 6, 8]
+[HCAP][23:09:24] [ns_t3] failed: no_token_after_submit
+[HCAP][23:09:27]   [HCVIS][23:08:35] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:09:27]   [HCVIS][23:08:42] Clicked checkbox
+[HCAP][23:09:27]   [HCVIS][23:08:46] Prompt: "Selecione todas as criaturas que poderiam se abrigar no item mostrado no exemplo"
+[HCAP][23:09:27]   [HCVIS][23:08:46] Grid cells: 9
+[HCAP][23:09:27]   [HCVIS][23:08:47] Screenshots: 9 images saved
+[HCAP][23:09:27]   [HCVIS][23:09:16] Clicking cells: 1,2,4,5,6,8
+[HCAP][23:09:27]   [HCVIS][23:09:19] Clicked submit
+[HCAP][23:09:27]   [HCVIS][23:09:24] Failed - no token after submit
+[HCAP][23:09:27] Falhou via ns_t3, rotacionando em 3s...
+[HCAP][23:09:30] [Tentativa 6/6] NS=ns_t4
+[HCAP][23:09:30] [ns_t4] Abrindo https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:09:54] [ns_t4] Challenge: '', 0 images
+[HCAP][23:09:54] CLIP classificando 0 imagens para: ''
+[HCAP][23:09:54] Target object: ''
+[HCAP][23:10:28]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:10:28] CLIP selected indices: []
+[HCAP][23:10:31] [ns_t4] Challenge: '', 0 images
+[HCAP][23:10:31] CLIP classificando 0 imagens para: ''
+[HCAP][23:10:31] Target object: ''
+[HCAP][23:10:39]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:10:39] CLIP selected indices: []
+[HCAP][23:10:42] [ns_t4] Challenge: '', 0 images
+[HCAP][23:10:42] CLIP classificando 0 imagens para: ''
+[HCAP][23:10:42] Target object: ''
+[HCAP][23:10:47]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:10:47] CLIP selected indices: []
+[HCAP][23:10:50] [ns_t4] Challenge: '', 0 images
+[HCAP][23:10:50] CLIP classificando 0 imagens para: ''
+[HCAP][23:10:50] Target object: ''
+[HCAP][23:10:54]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:10:54] CLIP selected indices: []
+[HCAP][23:10:57] [ns_t4] Challenge: '', 0 images
+[HCAP][23:10:57] CLIP classificando 0 imagens para: ''
+[HCAP][23:10:57] Target object: ''
+[HCAP][23:11:02]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:11:02] CLIP selected indices: []
+[HCAP][23:11:06]   [HCVIS][23:09:33] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:11:06]   [HCVIS][23:09:49] Clicked checkbox
+[HCAP][23:11:06]   [HCVIS][23:09:54] --- Round 1 ---
+[HCAP][23:11:06]   [HCVIS][23:09:54] Prompt: ""
+[HCAP][23:11:06]   [HCVIS][23:09:54] Grid cells: 0
+[HCAP][23:11:06]   [HCVIS][23:09:54] Images ready: 0/0
+[HCAP][23:11:06]   [HCVIS][23:10:28] No clicks from classifier, skipping this round
+[HCAP][23:11:06]   [HCVIS][23:10:31] --- Round 2 ---
+[HCAP][23:11:06]   [HCVIS][23:10:31] Prompt: ""
+[HCAP][23:11:06]   [HCVIS][23:10:31] Grid cells: 0
+[HCAP][23:11:06]   [HCVIS][23:10:31] Images ready: 0/0
+[HCAP][23:11:06]   [HCVIS][23:10:39] No clicks from classifier, skipping this round
+[HCAP][23:11:06]   [HCVIS][23:10:42] --- Round 3 ---
+[HCAP][23:11:06]   [HCVIS][23:10:42] Prompt: ""
+[HCAP][23:11:06]   [HCVIS][23:10:42] Grid cells: 0
+[HCAP][23:11:06]   [HCVIS][23:10:42] Images ready: 0/0
+[HCAP][23:11:06]   [HCVIS][23:10:47] No clicks from classifier, skipping this round
+[HCAP][23:11:06]   [HCVIS][23:10:50] --- Round 4 ---
+[HCAP][23:11:06]   [HCVIS][23:10:50] Prompt: ""
+[HCAP][23:11:06]   [HCVIS][23:10:50] Grid cells: 0
+[HCAP][23:11:06]   [HCVIS][23:10:50] Images ready: 0/0
+[HCAP][23:11:06]   [HCVIS][23:10:54] No clicks from classifier, skipping this round
+[HCAP][23:11:06]   [HCVIS][23:10:57] --- Round 5 ---
+[HCAP][23:11:06]   [HCVIS][23:10:57] Prompt: ""
+[HCAP][23:11:06]   [HCVIS][23:10:57] Grid cells: 0
+[HCAP][23:11:06]   [HCVIS][23:10:57] Images ready: 0/0
+[HCAP][23:11:06]   [HCVIS][23:11:02] No clicks from classifier, skipping this round
+[HCAP][23:11:06]   [HCVIS][23:11:05] Failed after 5 rounds
+[HCAP][23:11:06] Falhou via ns_t4, rotacionando em 3s...
+[HCAP][23:11:09] TODAS 6 tentativas falharam!
+FAILED: no token

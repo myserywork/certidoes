@@ -1,0 +1,21 @@
+[AWSWAF][22:36:08] [Tentativa 1/6] NS=host
+[AWSWAF][22:36:08] [host] Abrindo https://certidoes.stf.jus.br/
+[AWSWAF][22:36:21] [host] Audio challenge: /tmp/aws_waf_audio_1771637781671.aac
+[AWSWAF][22:36:21] Whisper transcrevendo: /tmp/aws_waf_audio_1771637781671.aac
+[AWSWAF][22:36:35] Whisper resultado: 'economics'
+[AWSWAF][22:36:35] [host] Resposta enviada: 'economics'
+[AWSWAF][22:36:41] [host] Resolvido! Cookie: aws-waf-token=2b24651e-0e3b-4c6a-acb5-25740b3786f8...
+[AWSWAF][22:36:41]   [AWSWAF][22:36:09] Launching stealth Chrome...
+[AWSWAF][22:36:41]   [AWSWAF][22:36:09] Navigating to https://certidoes.stf.jus.br/
+[AWSWAF][22:36:41]   [AWSWAF][22:36:10] Status: 405, Title: Human Verification
+[AWSWAF][22:36:41]   [AWSWAF][22:36:12] Clicking Begin...
+[AWSWAF][22:36:41]   [AWSWAF][22:36:15] Clicking audio button...
+[AWSWAF][22:36:41]   [AWSWAF][22:36:18] Clicking Play Audio...
+[AWSWAF][22:36:41]   [AWSWAF][22:36:21] Audio saved: /tmp/aws_waf_audio_1771637781671.aac (54504 bytes, format: aac)
+[AWSWAF][22:36:41]   [AWSWAF][22:36:35] Whisper answer: "economics"
+[AWSWAF][22:36:41]   [AWSWAF][22:36:36] Answer typed
+[AWSWAF][22:36:41]   [AWSWAF][22:36:36] Clicked Confirm
+[AWSWAF][22:36:41]   [AWSWAF][22:36:41] After confirm — Title: "STF - Certidões", URL: https://certidoes.stf.jus.br/
+[AWSWAF][22:36:41]   [AWSWAF][22:36:41] Solved! Cookie: aws-waf-token=2b24651e-0e3b-4c6a-acb5-25740b3786f8...
+[AWSWAF][22:36:41] Sucesso na tentativa 1 via host
+exit:0

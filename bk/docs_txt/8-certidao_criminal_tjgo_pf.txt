@@ -1,0 +1,3 @@
+curl -X POST http://localhost:5000/certidao -H "Content-Type: application/json" -d "{\"nome\": \"nome\",\"cpf\": \"cpf\",\"nm_mae\": \"nm_mae\", \"dt_nascimento\": \"01/01/1900\"}"
+
+

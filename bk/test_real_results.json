@@ -1,0 +1,100 @@
+[
+  {
+    "id": "receita-pf",
+    "nome": "Receita Federal PF",
+    "http_status": 200,
+    "status": "sucesso",
+    "link": "http://tmpfiles.org/29696609/certidao_receita_pf_27290000625.pdf",
+    "tempo": "39.7s",
+    "detalhes": {
+      "tipo": "printToPDF_fallback"
+    },
+    "erro": null
+  },
+  {
+    "id": "tjgo-civil",
+    "nome": "TJGO Civel PF",
+    "http_status": 200,
+    "status": "sucesso",
+    "link": "http://tmpfiles.org/29696684/certidao_civil_tjgo_02397147173.pdf",
+    "tempo": "30.6s",
+    "detalhes": {},
+    "erro": null
+  },
+  {
+    "id": "mpgo",
+    "nome": "MPGO",
+    "http_status": 200,
+    "status": "sucesso",
+    "link": "http://tmpfiles.org/29696739/certidao_mpgo_27290000625.pdf",
+    "tempo": "27.3s",
+    "detalhes": {
+      "tipo_certidao": "certidao_mpgo",
+      "cpf_cnpj": "27290000625",
+      "pdf_size": 85463,
+      "metodo": "local_audio_whisper"
+    },
+    "erro": null
+  },
+  {
+    "id": "cpf-receita",
+    "nome": "CPF Receita (hCaptcha)",
+    "http_status": 500,
+    "status": "erro",
+    "link": null,
+    "tempo": "116.6s",
+    "detalhes": {
+      "mensagem": "Falha ao resolver hCaptcha (CLIP visual)"
+    },
+    "erro": "Falha ao resolver hCaptcha (CLIP visual)"
+  },
+  {
+    "id": "stf",
+    "nome": "STF Distribuicao",
+    "http_status": 500,
+    "status": "erro",
+    "link": null,
+    "tempo": "43.6s",
+    "detalhes": {
+      "mensagem": "Erro na API do STF",
+      "cpf_cnpj": "27290000625",
+      "api_response": {
+        "ok": false,
+        "status": 400,
+        "data": {
+          "mensagem": "Não foi possível processar a requisição.",
+          "timestamp": "2026-03-19 19:04:48",
+          "erros": [
+            {
+              "campo": "nome",
+              "mensagem": "size must be between 2 and 2147483647"
+            },
+            {
+              "campo": "rg",
+              "mensagem": "RG é obrigatório."
+            },
+            {
+              "campo": "orgaoExpedidor",
+              "mensagem": "Órgão Expedidor é obrigatório."
+            },
+            {
+              "campo": "nomeDaMae",
+              "mensagem": "Nome da mãe deve ter pelo menos 2 caracteres."
+            },
+            {
+              "campo": "nome",
+              "mensagem": "must not be blank"
+            },
+            {
+              "campo": "estadoCivil",
+              "mensagem": "Estado civil é obrigatório."
+            }
+          ],
+          "quantidadeDeErros": 6
+        },
+        "isJson": true
+      }
+    },
+    "erro": "Erro na API do STF"
+  }
+]

@@ -1,0 +1,4 @@
+curl -X POST http://localhost:5000/certidao -H "Content-Type: application/json" -d "{\"tp_certidao\": \"civil\",\"tipo_cpf_cnpj\": \"cnpj\",\"cpf_cnpj\": \"26546054000140\"}"
+
+tp_certidao = civil, criminal ou eleitoral
+tipo_cpf_cnpj = cpf ou cnpj

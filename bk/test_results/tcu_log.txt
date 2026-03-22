@@ -1,0 +1,23 @@
+[LCAP][20:52:56] [Tentativa 1/10] NS=host
+[LCAP][20:52:57] [host] Abrindo https://contas.tcu.gov.br/certidao/Web/Certidao/NadaConsta/home.faces
+[LCAP][20:53:09] [host] Audio challenge: /tmp/recaptcha_audio_1771631589322.mp3
+[LCAP][20:53:09] Whisper transcrevendo: /tmp/recaptcha_audio_1771631589322.mp3
+[LCAP][20:53:15] Whisper resultado: 'putting gradients for me'
+[LCAP][20:53:15] [host] Resposta enviada: 'putting gradients for me'
+[LCAP][20:53:19] [host] Solved via audio! 2105 chars
+[LCAP][20:53:19]   [RCAUDIO][20:52:57] Launching stealth Chrome...
+[LCAP][20:53:19]   [RCAUDIO][20:52:59] Navigating to https://contas.tcu.gov.br/certidao/Web/Certidao/NadaConsta/home.faces
+[LCAP][20:53:19]   [RCAUDIO][20:53:01] Page loaded
+[LCAP][20:53:19]   [RCAUDIO][20:53:03] Found reCAPTCHA iframe, clicking checkbox...
+[LCAP][20:53:19]   [RCAUDIO][20:53:06] Challenge appeared, looking for audio button...
+[LCAP][20:53:19]   [RCAUDIO][20:53:07] Clicked audio button
+[LCAP][20:53:19]   [RCAUDIO][20:53:09] Audio URL: https://www.google.com/recaptcha/api2/payload/audio.mp3?p=06AFcWeA64DfAHa9MXSXzS...
+[LCAP][20:53:19]   (node:683343) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+[LCAP][20:53:19]   (Use `node --trace-warnings ...` to show where the warning was created)
+[LCAP][20:53:19]   [RCAUDIO][20:53:09] Audio downloaded: /tmp/recaptcha_audio_1771631589322.mp3
+[LCAP][20:53:19]   [RCAUDIO][20:53:15] Whisper answer: "putting gradients for me"
+[LCAP][20:53:19]   [RCAUDIO][20:53:16] Answer typed
+[LCAP][20:53:19]   [RCAUDIO][20:53:16] Clicked verify
+[LCAP][20:53:19]   [RCAUDIO][20:53:19] Solved! Token: 2105 chars
+[LCAP][20:53:19] Sucesso na tentativa 1 via host
+exit:0

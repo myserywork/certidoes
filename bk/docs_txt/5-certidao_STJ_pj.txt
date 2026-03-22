@@ -1,0 +1,1 @@
+curl -X POST http://localhost:5000/certidao -H "Content-Type: application/json" -d "{\"cnpj\": \"26546054000140\"}"

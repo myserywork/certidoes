@@ -1,0 +1,18 @@
+[MPF][20:22:39] Consultando nome para F: 13683315725
+[MPF][20:22:40] Nome encontrado: THAINA SANTOS GONCALVES
+[MPF][20:22:40] [Tentativa 1/10] NS=host
+[MPF][20:22:40] [STEALTH] Tentando via host (display :120)...
+[MPF][20:22:43]   launch
+[MPF][20:22:43]   open
+[MPF][20:22:43]   loaded
+[MPF][20:22:43]   clicked
+[MPF][20:22:43]   OK 1029ch in 1.3s
+[MPF][20:22:43] [STEALTH] Token via host! (1029 chars)
+[MPF][20:22:43] Sucesso na tentativa 1 via host
+[MPF][20:22:43] Emitindo certidão...
+[MPF][20:22:43] Certidao emitida! Hash: 9df5aafac3e8b4df67014f8523796d1e
+[MPF][20:22:43] Mensagem: ['Certidão gerada com sucesso, clique em download para baixá-la']
+[MPF][20:22:43] Baixando PDF: https://aplicativos.mpf.mp.br/ouvidoria/rest/v1/publico/certidao/download/9df5aafac3e8b4df67014f8523796d1e
+[MPF][20:22:45] PDF salvo: /tmp/mpf_jjjslv0u/certidao_mpf_13683315725.pdf (1076836 bytes)
+[MPF][20:22:47] Upload OK: http://tmpfiles.org/25326590/certidao_mpf_13683315725.pdf
+exit:0

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+logs/*.log
+
+# Downloads
+api/downloads/
+
+# Chrome profiles
+infra/profiles/
+
+# Env (tem credenciais Redis)
+.env
+
+# IDE
+.claude/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temp
+*.output
+*.tmp
+
+# VPN configs (chaves privadas)
+bk/vpn_configs_extra/*.conf
+docker/vpn/

@@ -1,0 +1,42 @@
+=== TST CNDT Test ===
+Started: Fri Feb 20 11:22:37 PM -03 2026
+[TST-CNDT][23:22:37] Emitindo CNDT para CNPJ: 33000167000101
+[TSTCAP][23:22:37] [Attempt 1/4] NS=host
+[TSTCAP][23:22:37] [host] Starting for CPF/CNPJ: 33000167000101
+[TSTCAP][23:22:45] [host] Audio captcha (attempt 1): /tmp/tst_audio_1771640565443.wav
+[TSTCAP][23:22:45] Whisper transcribing: /tmp/tst_audio_1771640565443.wav (model=medium)
+[TSTCAP][23:23:16] Whisper result: '3 T de tatu 8 D de dado D de dado W'
+[TSTCAP][23:23:16] Parsing: '3 t de tatu 8 d de dado d de dado w'
+[TSTCAP][23:23:16]   't de tatu' → T
+[TSTCAP][23:23:16]   'd de dado' → D
+[TSTCAP][23:23:16]   'd de dado' → D
+[TSTCAP][23:23:16] Parsed answer: '3T8DDW'
+[TSTCAP][23:23:16] [host] Sent answer: '3T8DDW'
+[TSTCAP][23:23:23] [host] Success!
+[TSTCAP][23:23:23]   [TSTJS][23:22:38] Navigating to TST CNDT...
+[TSTCAP][23:23:23]   [TSTJS][23:22:41] Clicking Emitir Certidão...
+[TSTCAP][23:23:23]   [TSTJS][23:22:45] Captcha form found
+[TSTCAP][23:23:23]   [TSTJS][23:22:45] --- Attempt 1/3 ---
+[TSTCAP][23:23:23]   [TSTJS][23:22:45] Audio saved: /tmp/tst_audio_1771640565443.wav (351136 bytes)
+[TSTCAP][23:23:23]   [TSTJS][23:23:16] Answer: "3T8DDW"
+[TSTCAP][23:23:23]   [TSTJS][23:23:17] Filled CPF: 33000167000101, Answer: 3T8DDW
+[TSTCAP][23:23:23]   [TSTJS][23:23:17] Clicking submit...
+[TSTCAP][23:23:23]   [TSTJS][23:23:23] Result: url=https://cndt-certidao.tst.jus.br/inicio.faces, err="", certidao=true, stillCaptcha=true, canDownload=true
+[TSTCAP][23:23:23]   [TSTJS][23:23:23] Success!
+[TSTCAP][23:23:23] Success on attempt 1 via host
+[TST-CNDT][23:23:23] SUCESSO! Tipo: nada_consta | Nome:  | Nº: 
+[TST-CNDT][23:24:29] Upload erro status: 422
+{
+  "status": "sucesso",
+  "tipo_certidao": "nada_consta",
+  "nome": "",
+  "cpf_cnpj": "33000167000101",
+  "numero_certidao": "",
+  "data_emissao": "",
+  "validade": "",
+  "link": null,
+  "metodo": "local_audio_whisper"
+}
+
+Finished: Fri Feb 20 11:24:29 PM -03 2026
+DONE

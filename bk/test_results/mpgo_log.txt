@@ -1,0 +1,9 @@
+=== MPGO Test ===
+Started: Fri Feb 20 11:25:53 PM -03 2026
+[MPGO][23:25:53] GET página MPGO para CNPJ: 33000167000101
+[MPGO][23:25:53] CSRF token: OhfRhcwcwxIRBJFYP3q1dC/OykTsb1KhAiWY7VcI...
+[LCAP][23:25:53] [Tentativa 1/10] NS=host
+[LCAP][23:25:53] [host] Abrindo https://www.mpgo.mp.br/certidao
+
+Finished: Fri Feb 20 11:28:23 PM -03 2026
+DONE

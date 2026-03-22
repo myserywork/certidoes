@@ -1,0 +1,64 @@
+=== hCaptcha v2 Test ===
+Started: Fri Feb 20 11:12:01 PM -03 2026
+[HCAP][23:12:01] [Attempt 1/6] NS=host
+[HCAP][23:12:01] [host] Opening https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:12:12] [host] Round 1 — 'Toque em itens comumente usados com o item mostrado', 9 imgs, example=yes
+[HCAP][23:12:12] Using RELATIONAL strategy (example available)
+[HCAP][23:12:12] Identifying object in: r1_example.png
+[HCAP][23:12:42] Identify error: Command '['python3', '-c', '\nimport torch, json, sys\nfrom transformers import CLIPProcessor, CLIPModel\nfrom PIL import Image\n\nmodel = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")\nproc = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")\ndevice = "cuda" if torch.cuda.is_available() else "cpu"\nmodel = model.to(device)\n\nlabels = ["dog", "cat", "bird", "fish", "horse", "cow", "sheep", "elephant", "lion", "tiger", "bear", "rabbit", "mouse", "frog", "snake", "turtle", "monkey", "chicken", "duck", "butterfly", "bee", "spider", "ant", "dolphin", "whale", "car", "truck", "bus", "bicycle", "motorcycle", "airplane", "boat", "train", "chair", "table", "sofa", "bed", "desk", "lamp", "clock", "mirror", "shelf", "bookshelf", "cabinet", "drawer", "wardrobe", "bench", "stool", "cup", "mug", "glass", "bottle", "plate", "bowl", "fork", "knife", "spoon", "pot", "pan", "kettle", "toaster", "blender", "microwave", "oven", "fridge", "shoe", "boot", "sandal", "hat", "cap", "helmet", "bag", "backpack", "umbrella", "sunglasses", "watch", "ring", "necklace", "gloves", "scarf", "shirt", "jacket", "coat", "pants", "dress", "skirt", "suit", "tie", "belt", "ball", "bat", "racket", "guitar", "piano", "drum", "violin", "trumpet", "phone", "laptop", "computer", "tablet", "camera", "television", "radio", "book", "newspaper", "pen", "pencil", "scissors", "ruler", "eraser", "key", "lock", "door", "window", "fence", "gate", "bridge", "stairs", "tree", "flower", "grass", "leaf", "bush", "cactus", "mushroom", "rock", "mountain", "river", "lake", "ocean", "beach", "island", "forest", "house", "building", "castle", "church", "tent", "cabin", "barn", "apple", "banana", "orange", "grape", "strawberry", "watermelon", "lemon", "bread", "cake", "pizza", "sandwich", "hamburger", "hotdog", "fries", "cookie", "donut", "ice cream", "chocolate", "cheese", "egg", "hammer", "wrench", "screwdriver", "saw", "drill", "shovel", "axe", "broom", "mop", "bucket", "basket", "box", "candle", "vase", "pillow", "blanket", "towel", "soap", "toothbrush", "comb", "brush", "fire", "smoke", "rain", "snow", "sun", "moon", "star", "cloud", "birdhouse", "doghouse", "fishbowl", "cage", "nest", "burrow", "den", "barn", "stable", "kennel", "aquarium", "terrarium", "beehive"]\nimg = Image.open("/tmp/hcaptcha_1771639931872/r1_example.png").convert("RGB")\n\n# Process in batches of 50 to avoid memory issues\nbest_label = ""\nbest_score = -1\n\nfor i in range(0, len(labels), 50):\n    batch = labels[i:i+50]\n    texts = [f"a photo of a {l}" for l in batch]\n    inputs = proc(text=texts, images=img, return_tensors="pt", padding=True)\n    inputs = {k: v.to(device) for k, v in inputs.items()}\n    with torch.no_grad():\n        outputs = model(**inputs)\n        logits = outputs.logits_per_image[0]\n        probs = logits.softmax(dim=0)\n    for j, (label, score) in enumerate(zip(batch, probs.tolist())):\n        if score > best_score:\n            best_score = score\n            best_label = label\n\nprint(json.dumps({"label": best_label, "score": best_score}))\n']' timed out after 30 seconds
+[HCAP][23:12:42] Could not identify example, falling back to direct classification
+[HCAP][23:12:42] Direct classify target: 'toque em itens comumente usados com o item mostrado'
+[HCAP][23:12:53]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:12:53]   cell 0: 0.309
+[HCAP][23:12:53]   cell 1: 0.247
+[HCAP][23:12:53]   cell 2: 0.255
+[HCAP][23:12:53]   cell 3: 0.214
+[HCAP][23:12:53]   cell 4: 0.083
+[HCAP][23:12:53]   cell 5: 0.125
+[HCAP][23:12:53]   cell 6: 0.147
+[HCAP][23:12:53]   cell 7: 0.194
+[HCAP][23:12:53]   cell 8: 0.458
+[HCAP][23:12:53] [host] Sent clicks: [8]
+[HCAP][23:13:00] [host] Round 2 — 'Toque em itens comumente usados com o item mostrado', 9 imgs, example=yes
+[HCAP][23:13:00] Using RELATIONAL strategy (example available)
+[HCAP][23:13:00] Identifying object in: r2_example.png
+[HCAP][23:13:05] Identified: 'lamp' (score=0.767)
+[HCAP][23:13:05] Example identified as: 'lamp'
+[HCAP][23:13:05] Related items for 'lamp': ['bulb', 'table', 'desk', 'shade', 'switch', 'plug']
+[HCAP][23:13:10]   Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[HCAP][23:13:10]   cell 0: pos=0.509 ratio=1.04 best='shade'(0.211)
+[HCAP][23:13:10]   cell 1: pos=0.823 ratio=4.65 best='plug'(0.631)
+[HCAP][23:13:10]   cell 2: pos=0.881 ratio=7.39 best='plug'(0.681)
+[HCAP][23:13:10]   cell 3: pos=0.133 ratio=0.15 best='plug'(0.053)
+[HCAP][23:13:10]   cell 4: pos=0.329 ratio=0.49 best='shade'(0.133)
+[HCAP][23:13:10]   cell 5: pos=0.398 ratio=0.66 best='shade'(0.231)
+[HCAP][23:13:10]   cell 6: pos=0.688 ratio=2.20 best='plug'(0.506)
+[HCAP][23:13:10]   cell 7: pos=0.542 ratio=1.18 best='switch'(0.196)
+[HCAP][23:13:10]   cell 8: pos=0.504 ratio=1.02 best='table'(0.176)
+[HCAP][23:13:10] [host] Sent clicks: [1, 2, 6]
+[HCAP][23:13:16] [host] Solved! 1827 chars
+[HCAP][23:13:16]   [HCVIS][23:12:01] Navigating to https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp
+[HCAP][23:13:16]   [HCVIS][23:12:06] Clicked checkbox
+[HCAP][23:13:16]   [HCVIS][23:12:11] --- Round 1 ---
+[HCAP][23:13:16]   [HCVIS][23:12:11] Prompt: "Toque em itens comumente usados com o item mostrado"
+[HCAP][23:13:16]   (node:2992221) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+[HCAP][23:13:16]   (Use `node --trace-warnings ...` to show where the warning was created)
+[HCAP][23:13:16]   [HCVIS][23:12:12] Example image downloaded: https://imgs.hcaptcha.com/ZFi4bvcz6Y2p7ezHpiTcEL_Fd4xsddsSuaZXVHrMfNM-V8ZiG_4-uT...
+[HCAP][23:13:16]   [HCVIS][23:12:12] Grid cells: 9
+[HCAP][23:13:16]   [HCVIS][23:12:12] Images ready: 9/9
+[HCAP][23:13:16]   [HCVIS][23:12:53] Clicking cells: 8
+[HCAP][23:13:16]   [HCVIS][23:12:54] Clicked submit (text: "Próximo")
+[HCAP][23:13:16]   [HCVIS][23:12:58] Round 1 done, no token yet. Checking for new challenge...
+[HCAP][23:13:16]   [HCVIS][23:13:00] --- Round 2 ---
+[HCAP][23:13:16]   [HCVIS][23:13:00] Prompt: "Toque em itens comumente usados com o item mostrado"
+[HCAP][23:13:16]   [HCVIS][23:13:00] Example image downloaded: https://imgs.hcaptcha.com/ZFi4bvcz6Y2p7ezHpiTcEL_Fd4xsddsSuaZXVHrMfNM-V8ZiG_4-uT...
+[HCAP][23:13:16]   [HCVIS][23:13:00] Grid cells: 9
+[HCAP][23:13:16]   [HCVIS][23:13:00] Images ready: 9/9
+[HCAP][23:13:16]   [HCVIS][23:13:10] Clicking cells: 1,2,6
+[HCAP][23:13:16]   [HCVIS][23:13:12] Clicked submit (text: "Verificar")
+[HCAP][23:13:16]   [HCVIS][23:13:16] Solved in round 2! Token: 1827 chars
+[HCAP][23:13:16] Success on attempt 1 via host
+SUCCESS: token=1827 chars
+TOKEN_START: P1_eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.3gAHp3Bhc3NrZXnFBLMeB6MGmCvdTebq1tfDjS-l1Ri7nithrW9TA4KKdce4...
+Finished: Fri Feb 20 11:13:16 PM -03 2026
+DONE

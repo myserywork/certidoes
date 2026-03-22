@@ -1,0 +1,12 @@
+bk/
+logs/
+api/downloads/
+api/__pycache__/
+__pycache__/
+infra/__pycache__/
+infra/profiles/
+*.xlsx
+.claude/
+.env
+.git/
+*.output

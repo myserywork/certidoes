@@ -1,0 +1,41 @@
+# Certidão Negativa MPF - Ministério Público Federal
+# Método PRINCIPAL: Puppeteer-stealth (Turnstile auto-resolve, custo ZERO)
+# Método FALLBACK: 2captcha ($0.003/token)
+# Flask API na porta 5013
+# Fluxo: Consultar nome → Resolver Turnstile → Emitir certidão → Download PDF
+
+# ── STEALTH (padrão — custo zero) ──
+
+# Consulta CPF (stealth primeiro, 2captcha fallback)
+python3 13-certidao_MPF.py --cpf 13683315725
+
+# Consulta CNPJ
+python3 13-certidao_MPF.py --cnpj 00000000000191
+
+# Forçar APENAS stealth (sem 2captcha)
+python3 13-certidao_MPF.py --cpf 13683315725 --stealth-only
+
+# Usar display específico
+python3 13-certidao_MPF.py --cpf 13683315725 --display :121
+
+# ── 2CAPTCHA (fallback manual) ──
+
+# Forçar APENAS 2captcha (pular stealth)
+python3 13-certidao_MPF.py --cpf 13683315725 --2captcha-only
+
+# ── API Flask ──
+
+# Rodar servidor
+python3 13-certidao_MPF.py --serve --port 5013
+
+# Consulta via API (stealth + fallback)
+curl -X POST http://localhost:5013/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725"}'
+
+# Consulta via API (stealth only, sem gastar 2captcha)
+curl -X POST http://localhost:5013/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725", "stealth_only": true}'
+
+# Requisitos:
+# - Xvfb rodando (display :120 ou outro)
+# - puppeteer-extra + puppeteer-extra-plugin-stealth em /home/ramza/node_modules/
+# - Google Chrome em /usr/bin/google-chrome
+# - Google profile logado em /home/ramza/credenciais_cadunico/google_profile_logged/

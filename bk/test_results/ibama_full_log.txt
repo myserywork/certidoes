@@ -1,0 +1,14 @@
+[IBAMA][21:51:29] Acessando IBAMA para: 123.456.789-09
+[IBAMA][21:51:30] Navegando para formulário de certidão...
+[IBAMA][21:51:30] [Tentativa 1/6] NS=host
+[IBAMA][21:51:48]   [RCENT][21:51:30] Launching stealth Chrome...
+[IBAMA][21:51:48]   [RCENT][21:51:30] Navigating to https://servicos.ibama.gov.br/sicafiext/sistema.php
+[IBAMA][21:51:48]   [RCENT][21:51:32] Page loaded
+[IBAMA][21:51:48]   [RCENT][21:51:32] Running post-nav JS...
+[IBAMA][21:51:48]   [RCENT][21:51:45] Post-nav done
+[IBAMA][21:51:48]   [RCENT][21:51:47] Executing enterprise.execute(6Ld2bNsrAAAAAML-kvSg-Yy3VwoXvxkr3Ymgq2t7, action=submit)...
+[IBAMA][21:51:48]   [RCENT][21:51:47] Solved! Token: 2020 chars
+[IBAMA][21:51:48] Token obtido (2020 chars) via host
+[IBAMA][21:51:48] Submetendo pesquisa: 123.456.789-09
+[IBAMA][21:51:49] Resultado: 20458 bytes, iframe=False, pdf=False, nada_consta=True, has_result=True
+exit:124

@@ -1,0 +1,13 @@
+# Consulta Situação Cadastral CPF - Receita Federal
+# Método: HTTP puro + 2captcha (hCaptcha)
+# Flask API na porta 5012
+# REQUER: CPF + Data de Nascimento
+
+# Consulta CPF
+curl -X POST http://localhost:5012/certidao -H "Content-Type: application/json" -d '{"cpf": "13683315725", "data_nascimento": "01/01/1990"}'
+
+# CLI direto
+python3 12-certidao_CPF_Receita.py --cpf 13683315725 --nascimento 01/01/1990
+
+# Rodar servidor Flask
+python3 12-certidao_CPF_Receita.py --serve --port 5012

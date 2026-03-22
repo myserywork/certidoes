@@ -1,0 +1,12 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+requests
+# Dependências dos scripts originais (já devem estar instaladas):
+# flask
+# undetected-chromedriver
+# selenium
+# whisper / openai-whisper
+# torch
+# transformers
+# Pillow

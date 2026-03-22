@@ -1,0 +1,42 @@
+=== STF End-to-End Test ===
+Started: Fri Feb 20 11:15:35 PM -03 2026
+[STF][23:15:36] GET STF para: 00000000000
+/home/ramza/.local/lib/python3.12/site-packages/urllib3/connectionpool.py:1097: InsecureRequestWarning: Unverified HTTPS request is being made to host 'certidoes.stf.jus.br'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+  warnings.warn(
+[STF][23:15:36] WAF detectado, resolvendo via audio+Whisper...
+[AWSWAF][23:15:36] [Tentativa 1/6] NS=host
+[AWSWAF][23:15:36] [host] Abrindo https://certidoes.stf.jus.br/
+[AWSWAF][23:15:49] [host] Audio challenge: /tmp/aws_waf_audio_1771640149081.aac
+[AWSWAF][23:15:49] Whisper transcrevendo: /tmp/aws_waf_audio_1771640149081.aac
+[AWSWAF][23:16:05] Whisper resultado: 'method'
+[AWSWAF][23:16:05] [host] Resposta enviada: 'method'
+[AWSWAF][23:16:11] [host] Resolvido! Cookie: aws-waf-token=2b24651e-0e3b-4c6a-acb5-25740b3786f8...
+[AWSWAF][23:16:11]   [AWSWAF][23:15:36] Launching stealth Chrome...
+[AWSWAF][23:16:11]   [AWSWAF][23:15:36] Navigating to https://certidoes.stf.jus.br/
+[AWSWAF][23:16:11]   [AWSWAF][23:15:37] Status: 405, Title: Human Verification
+[AWSWAF][23:16:11]   [AWSWAF][23:15:39] Clicking Begin...
+[AWSWAF][23:16:11]   [AWSWAF][23:15:43] Clicking audio button...
+[AWSWAF][23:16:11]   [AWSWAF][23:15:46] Clicking Play Audio...
+[AWSWAF][23:16:11]   [AWSWAF][23:15:49] Audio saved: /tmp/aws_waf_audio_1771640149081.aac (51384 bytes, format: aac)
+[AWSWAF][23:16:11]   [AWSWAF][23:16:05] Whisper answer: "method"
+[AWSWAF][23:16:11]   [AWSWAF][23:16:06] Answer typed
+[AWSWAF][23:16:11]   [AWSWAF][23:16:06] Clicked Confirm
+[AWSWAF][23:16:11]   [AWSWAF][23:16:11] After confirm — Title: "STF - Certidões", URL: https://certidoes.stf.jus.br/
+[AWSWAF][23:16:11]   [AWSWAF][23:16:11] Solved! Cookie: aws-waf-token=2b24651e-0e3b-4c6a-acb5-25740b3786f8...
+[AWSWAF][23:16:11] Sucesso na tentativa 1 via host
+[STF][23:16:11] Cookie aws-waf-token configurado
+/home/ramza/.local/lib/python3.12/site-packages/urllib3/connectionpool.py:1097: InsecureRequestWarning: Unverified HTTPS request is being made to host 'certidoes.stf.jus.br'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+  warnings.warn(
+[STF][23:16:11] Página real carregada (747 bytes)
+[STF][23:16:11] URLs encontradas: ['api.js']
+[STF][23:16:11] Upload erro status: 422
+{
+  "status": "parcial",
+  "mensagem": "WAF resolvido, página carregada",
+  "link": null,
+  "cpf_cnpj": "00000000000",
+  "metodo": "local_audio_whisper"
+}
+
+Finished: Fri Feb 20 11:16:12 PM -03 2026
+DONE
