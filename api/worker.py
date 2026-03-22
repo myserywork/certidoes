@@ -63,32 +63,51 @@ def _import_script(filename):
     _script_cache[filename] = mod
     return mod
 
-def _nav(script_name, args):
+def _nav(script_name, args, max_retries=2):
+    """Executa script Selenium com retry (sem matar Chrome global)."""
     mod = _import_script(script_name)
-    bot = mod.Navegador(headless=False)
-    try:
-        resultado = bot.emitir_certidao(*args)
-        bot.fechar()
-        if not resultado:
-            return {"status": "falha", "mensagem": "Certidao nao disponivel"}
-        if isinstance(resultado, dict):
-            resp = dict(resultado)
-            if "status" in resp and resp["status"] not in ("sucesso", "erro", "falha", "parcial"):
-                resp["resultado_texto"] = resp["status"]
-                resp["status"] = "sucesso" if resp.get("link") else "falha"
-            elif "status" not in resp:
-                resp["status"] = "sucesso" if resp.get("link") else "falha"
-            if not resp.get("link"):
-                resp["status"] = "falha"
-                resp.setdefault("mensagem", "PDF nao gerado")
-            return resp
-        return {"status": "sucesso", "link": resultado}
-    except Exception as e:
+    last_error = ""
+
+    for attempt in range(1, max_retries + 1):
+        bot = None
         try:
+            bot = mod.Navegador(headless=False)
+            resultado = bot.emitir_certidao(*args)
             bot.fechar()
-        except Exception:
-            pass
-        return {"status": "erro", "mensagem": str(e)[:500]}
+            bot = None
+
+            if not resultado:
+                last_error = "Certidao nao disponivel"
+                if attempt < max_retries:
+                    _log.info(f"[{script_name}] tentativa {attempt} vazio, retry...")
+                    time.sleep(2)
+                    continue
+                return {"status": "falha", "mensagem": last_error}
+
+            if isinstance(resultado, dict):
+                resp = dict(resultado)
+                if "status" in resp and resp["status"] not in ("sucesso", "erro", "falha", "parcial"):
+                    resp["resultado_texto"] = resp["status"]
+                    resp["status"] = "sucesso" if resp.get("link") else "falha"
+                elif "status" not in resp:
+                    resp["status"] = "sucesso" if resp.get("link") else "falha"
+                if not resp.get("link"):
+                    resp["status"] = "falha"
+                    resp.setdefault("mensagem", "PDF nao gerado")
+                return resp
+            return {"status": "sucesso", "link": resultado}
+
+        except Exception as e:
+            last_error = str(e)[:500]
+            if bot:
+                try: bot.fechar()
+                except Exception: pass
+            if attempt < max_retries:
+                _log.info(f"[{script_name}] tentativa {attempt} erro, retry em 3s...")
+                time.sleep(3)
+                continue
+
+    return {"status": "erro", "mensagem": last_error}
 
 
 # ─── Runners ──────────────────────────────────────────────
