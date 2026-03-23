@@ -204,16 +204,36 @@ class Navegador:
         except Exception as e:
             print(f"Tabela nao encontrada: {e}")
 
-        # 2. Verificar se tem mensagem de erro/status na pagina
+        # 2. Verificar se a pagina tem erro
         try:
-            body = self.driver.find_element(By.TAG_NAME, "body").text
-            if "não existe" in body.lower() or "não há" in body.lower():
-                print("Site diz: certidao nao existe")
+            body = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+            erros = ["não existe", "não há", "data de nascimento", "dados informados não conferem",
+                     "erro", "invalido", "inválido", "cpf não encontrado"]
+            for erro in erros:
+                if erro in body:
+                    print(f"Site retornou erro: '{erro}' encontrado na pagina")
+                    return {"status": "falha", "mensagem": f"Receita Federal: {erro}"}
         except Exception:
             pass
 
-        # 3. Sempre gerar printToPDF como fallback
-        print("Gerando PDF da pagina via printToPDF...")
+        # 3. Verificar se tem conteudo de certidao (tabela, resultado)
+        has_certidao = False
+        try:
+            body = self.driver.find_element(By.TAG_NAME, "body").text
+            indicadores = ["certidão", "nada consta", "regular", "positiva", "negativa", "débito", "crédito"]
+            for ind in indicadores:
+                if ind.lower() in body.lower():
+                    has_certidao = True
+                    break
+        except Exception:
+            pass
+
+        if not has_certidao:
+            print("Pagina nao parece conter certidao — provavel tela de formulario/erro")
+            return {"status": "falha", "mensagem": "Certidao nao disponivel - pagina sem resultado"}
+
+        # 4. Gerar printToPDF (pagina confirmada com conteudo)
+        print("Gerando PDF da certidao via printToPDF...")
         try:
             time.sleep(2)
             pdf = self.driver.execute_cdp_cmd("Page.printToPDF", {
@@ -223,15 +243,20 @@ class Navegador:
             pdf_path = os.path.join(self.tempdir, f"certidao_receita_pf_{cpf}.pdf")
             with open(pdf_path, "wb") as f:
                 f.write(base64.b64decode(pdf['data']))
-            print(f"PDF gerado: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
+            size = os.path.getsize(pdf_path)
+            print(f"PDF gerado: {pdf_path} ({size} bytes)")
+
+            if size < 5000:
+                print("PDF muito pequeno — provavel pagina vazia")
+                return {"status": "falha", "mensagem": "PDF gerado muito pequeno"}
+
             link = self.upload_para_fileio(pdf_path)
             if link:
-                return {"link": link, "tipo": "receita_pf"}
-            # Upload falhou mas PDF local existe
-            return {"link": None, "tipo": "receita_pf", "pdf_local": pdf_path}
+                return {"status": "sucesso", "link": link, "tipo": "receita_pf"}
+            return {"status": "sucesso", "link": None, "tipo": "receita_pf", "pdf_local": pdf_path}
         except Exception as e2:
             print(f"printToPDF falhou: {e2}")
-            return None
+            return {"status": "falha", "mensagem": f"printToPDF falhou: {str(e2)[:100]}"}
 
     def fechar(self):
         self.driver.quit()
