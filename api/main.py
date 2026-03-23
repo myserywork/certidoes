@@ -822,8 +822,8 @@ async def retry_job(job_id: str):
     if result.get("erro"):
         raise HTTPException(status_code=400, detail=result["erro"])
 
-    _api_log.info(f"JOB RETRY | {job_id} | {retried} certidoes reprocessadas")
-    return JSONResponse(content={"job_id": job_id, "retried": retried, "status": "na_fila"})
+    _api_log.info(f"JOB RETRY | {job_id} | {result.get('retried',0)} certidoes")
+    return JSONResponse(content=result)
 
 
 @app.get(

@@ -371,7 +371,7 @@ def process_task(job_id, cert_id):
         if cd_after.get("status") in ("erro", "falha"):
             error_msg = (cd_after.get("resultado") or {}).get("mensagem", "")
             retries = cd_after.get("_retries", 0)
-            if _is_retriable(error_msg) and retries < 1:
+            if _is_retriable(error_msg) and retries < 2:
                 cert_log.info(f"job={job_id} doc={documento} AUTO-RETRY {cert_id} (erro retriable)")
                 _update_job_cert(job_id, cert_id, {"status": "pendente", "_retries": retries + 1,
                                                    "inicio": None, "fim": None, "resultado": None})
