@@ -27,6 +27,7 @@ import redis as redis_lib
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+sys.dont_write_bytecode = True  # Nunca cachear .pyc (evita _udd fantasma)
 
 from api.jobs import get_redis, get_job, save_job, QUEUE_KEY, _job_key, CACHE_TTL
 from api.logger import get_logger
@@ -98,26 +99,49 @@ def _nav(script_name, args):
 
 # ─── Runners ──────────────────────────────────────────────
 
+# ─── HTTP-only runners (sem browser) ─────────────────────
+def run_stj_pf(p):
+    from scripts_http.stj_pf import emitir_certidao_stj
+    return emitir_certidao_stj(p["cpf"])
+
+def run_stj_pj(p):
+    from scripts_http.stj_pj import emitir_certidao_stj_pj
+    return emitir_certidao_stj_pj(p["cnpj"])
+
+def run_tjgo_civil(p):
+    from scripts_http.tjgo_civil import emitir_certidao_tjgo_civil
+    return emitir_certidao_tjgo_civil(p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"])
+
+def run_tjgo_criminal(p):
+    from scripts_http.tjgo_criminal import emitir_certidao_tjgo_criminal
+    return emitir_certidao_tjgo_criminal(p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"])
+
+def run_tjgo_processos(p):
+    from scripts_http.tjgo_processos import emitir_certidao_tjgo_processos
+    return emitir_certidao_tjgo_processos(p.get("cpf") or p.get("cnpj"))
+
+def run_trt18(p):
+    from scripts_http.trt18 import emitir_certidao_trt18
+    return emitir_certidao_trt18(p.get("cpf") or p.get("cnpj"))
+
+# ─── Selenium runners (precisam de browser) ──────────────
 def run_receita_pj(p): return _nav("1-certidao_receita_pj", (p["cnpj"],))
 def run_receita_pf(p): return _nav("2-certidao_receita_pf", (p["cpf"], p["dt_nascimento"]))
-def run_stj_pf(p): return _nav("4-certidao_STJ_pf", (p["cpf"],))
-def run_stj_pj(p): return _nav("5-certidao_STJ_pj", (p["cnpj"],))
-def run_tjgo_civil(p): return _nav("6-certidao_civil_tjgo_pf", (p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"]))
-def run_tjgo_processos(p): return _nav("7-consulta_processos_tjgo_pj", (p.get("cpf") or p.get("cnpj"),))
-def run_tjgo_criminal(p): return _nav("8-certidao_criminal_tjgo_pf", (p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"]))
+
 def run_trf1_cpf(p):
     for tp in ["criminal", "civil"]:
         r = _nav("9-certidao_TRF1_todos", (tp, "cpf", p["cpf"]))
         if r.get("status") == "sucesso": return r
     return r
 def run_trf1_cnpj(p): return _nav("9-certidao_TRF1_todos", ("criminal", "cnpj", p["cnpj"]))
+
+# ─── HTTP/API runners (com CAPTCHA solver) ────────────────
 def run_tcu(p):
     mod = _import_script("11-certidao_TCU")
     return mod.emitir_certidao_tcu(p.get("cpf") or p.get("cnpj"))
 def run_mpf(p):
     mod = _import_script("13-certidao_MPF")
     return mod.emitir_certidao_mpf(p.get("cpf") or p.get("cnpj"), "F" if p.get("cpf") else "J")
-def run_trt18(p): return _nav("15-certidao_TRT18", (p.get("cpf") or p.get("cnpj"), "andamento"))
 def run_ibama(p):
     mod = _import_script("16-certidao_IBAMA")
     return mod.emitir_certidao_ibama(p.get("cpf") or p.get("cnpj"))
