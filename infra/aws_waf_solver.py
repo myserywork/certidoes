@@ -18,7 +18,7 @@ from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "aws_waf_audio_solver.js"
 MAX_RETRIES = 6
-NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
+NAMESPACES = [""] if platform.system() == "Windows" else ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
 
 
 def log(msg):

@@ -33,10 +33,10 @@ from api.logger import get_logger
 import api.chrome_patch
 
 # ─── Config ───────────────────────────────────────────────
-MAX_CHROME = int(os.environ.get("MAX_CHROME", "6"))
+MAX_CHROME = int(os.environ.get("MAX_CHROME", "3"))
 WORKER_ID = os.environ.get("WORKER_ID", f"worker-{os.getpid()}")
 DOWNLOADS_DIR = PROJECT_ROOT / "api" / "downloads"
-CERT_TIMEOUT = 90  # 90s max por certidao (antes era 120)
+CERT_TIMEOUT = 150  # 150s max (2captcha poll demora ~30s)
 
 _shutdown = threading.Event()
 _chrome_sem = None
@@ -247,7 +247,8 @@ def _update_job_cert(job_id, cert_id, updates):
 RETRIABLE_ERRORS = [
     "HTTPConnectionPool", "RemoteDisconnected", "Connection aborted",
     "Max retries exceeded", "invalid session id", "session deleted",
-    "chrome not reachable", "target closed",
+    "chrome not reachable", "target closed", "WinError",
+    "GetHandleVerifier", "cannot create a file",
 ]
 
 def _is_retriable(error_msg: str) -> bool:

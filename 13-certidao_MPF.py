@@ -34,11 +34,15 @@ TURNSTILE_SITEKEY = "0x4AAAAAACMhejJkLsBWVaMb"
 DISPLAY = os.environ.get("DISPLAY", ":120")
 SOURCE_PROFILE = Path(tempfile.gettempdir()) / "chrome_profile"
 PROFILE_DIR = Path(__file__).parent / "infra" / "profiles" / "mpf"
-CHROME_PATH = "/usr/bin/google-chrome"
+CHROME_PATH = None if platform.system() == "Windows" else "/usr/bin/google-chrome"
 
-# Namespaces disponíveis para rotação (não usar os de CadUnico se ocupados)
-NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
-MAX_RETRIES = 10
+# Namespaces: no Windows so roda no host (sem ip netns)
+if platform.system() == "Windows":
+    NAMESPACES = [""]
+    MAX_RETRIES = 3
+else:
+    NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
+    MAX_RETRIES = 10
 
 # JS solver file (persistente, não usar /tmp para evitar deleção acidental)
 STEALTH_SOLVER_JS_PATH = Path(__file__).parent / "infra" / "mpf_stealth_solver.js"
@@ -227,10 +231,22 @@ def emitir_certidao_mpf(cpf_cnpj: str, tipo_pessoa: str = None, display=None) ->
 
         log(f"Nome encontrado: {nome}")
 
-        # 2. Resolver Turnstile (stealth + rotação de NS automática)
-        token = resolver_turnstile(display=display)
+        # 2. Resolver Turnstile: tentar 2captcha primeiro no Windows
+        token = None
+        try:
+            sys.path.insert(0, str(Path(__file__).parent))
+            from infra.twocaptcha_solver import solve_turnstile
+            token = solve_turnstile(TURNSTILE_SITEKEY, MPF_PAGE)
+            if token:
+                log(f"Turnstile resolvido via 2captcha")
+        except Exception as e:
+            log(f"2captcha Turnstile falhou ({e}), tentando stealth...")
+
         if not token:
-            return {"status": "erro", "mensagem": "Falha Turnstile após 10 tentativas com rotação de NS"}
+            token = resolver_turnstile(display=display)
+
+        if not token:
+            return {"status": "erro", "mensagem": "Falha Turnstile (2captcha + stealth)"}
 
         # 3. Emitir certidão
         log("Emitindo certidão...")

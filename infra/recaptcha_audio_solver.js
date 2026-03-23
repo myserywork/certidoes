@@ -33,7 +33,7 @@ puppeteer.use(StealthPlugin());
 const TARGET_URL = process.argv[2] || '';
 const PROFILE = process.argv[3] || '/home/ramza/telegram_downloads/PEDRO_PROJECT/infra/profiles/recaptcha';
 const POST_NAV_JS = process.argv[4] || '';  // JS to run after navigation (e.g. click a button)
-const CHROME = '/usr/bin/google-chrome';
+const CHROME = process.platform === 'win32' ? null : '/usr/bin/google-chrome';
 
 function log(msg) { process.stderr.write(`[RCAUDIO][${new Date().toTimeString().slice(0,8)}] ${msg}\n`); }
 function respond(obj) { process.stdout.write(JSON.stringify(obj) + '\n'); }
@@ -80,8 +80,8 @@ function downloadFile(url, dest) {
 
     log('Launching stealth Chrome...');
     const browser = await puppeteer.launch({
-        headless: false,
-        executablePath: CHROME,
+        headless: process.platform === 'win32' ? 'new' : false,
+        ...(CHROME ? {executablePath: CHROME} : {}),
         userDataDir: PROFILE,
         args: [
             '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',

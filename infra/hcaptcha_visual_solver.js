@@ -25,7 +25,7 @@ const readline = require('readline');
 puppeteer.use(StealthPlugin());
 
 const TARGET_URL = process.argv[2] || '';
-const CHROME = '/usr/bin/google-chrome';
+const CHROME = process.platform === 'win32' ? null : '/usr/bin/google-chrome';
 const MAX_ROUNDS = 5;
 
 function log(msg) { process.stderr.write(`[HCVIS][${new Date().toTimeString().slice(0,8)}] ${msg}\n`); }
@@ -62,7 +62,7 @@ function waitForLine(rl, timeoutMs = 45000) {
     if (!TARGET_URL) { process.exit(1); }
 
     const browser = await puppeteer.launch({
-        headless: false, executablePath: CHROME,
+        headless: process.platform === 'win32' ? 'new' : false, ...(CHROME ? {executablePath: CHROME} : {}),
         args: ['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1200,900',
                '--no-first-run','--disable-extensions','--disable-sync','--mute-audio',
                '--disable-infobars','--password-store=basic',

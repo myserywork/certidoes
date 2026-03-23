@@ -16,6 +16,14 @@ import json
 import os
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
+
+# Carregar .env automaticamente
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent / ".env")
+except ImportError:
+    pass
 
 import redis
 

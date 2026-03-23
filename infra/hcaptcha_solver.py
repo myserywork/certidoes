@@ -24,7 +24,7 @@ from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "hcaptcha_visual_solver.js"
 MAX_RETRIES = 6
-NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
+NAMESPACES = [""] if platform.system() == "Windows" else ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
 
 # ─── Common objects for CLIP identification ───────────────────────
 COMMON_OBJECTS = [

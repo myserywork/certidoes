@@ -38,7 +38,8 @@ function downloadFile(url, dest) {
 
 (async () => {
     const browser = await puppeteer.launch({
-        headless: false, executablePath: '/usr/bin/google-chrome',
+        headless: process.platform === 'win32' ? 'new' : false,
+        ...(process.platform !== 'win32' ? {executablePath: '/usr/bin/google-chrome'} : {}),
         args: ['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1400,900',
                '--no-first-run','--disable-sync','--mute-audio',
                '--disable-infobars','--password-store=basic',

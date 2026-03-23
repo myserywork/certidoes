@@ -25,7 +25,7 @@ const path = require('path');
 const readline = require('readline');
 puppeteer.use(StealthPlugin());
 
-const CHROME = '/usr/bin/google-chrome';
+const CHROME = process.platform === 'win32' ? null : '/usr/bin/google-chrome';
 const TARGET = 'https://certidoes.stf.jus.br';
 const EMISSOR = 'https://certidoes-api.stf.jus.br/certidoes';
 const SITEKEY = '6Lc6IFQsAAAAANA-LwhawfStAlHLQtiB4RwT0jex';
@@ -253,7 +253,7 @@ function buildFormData(doc, tipo, nome, extraJson) {
     log(`Doc: ${DOC}, Tipo: ${TIPO}, Nome: ${NOME || '(auto)'}`);
     
     const browser = await puppeteer.launch({
-        headless: false, executablePath: CHROME,
+        headless: process.platform === 'win32' ? 'new' : false, ...(CHROME ? {executablePath: CHROME} : {}),
         args: ['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1400,900',
                '--no-first-run','--disable-extensions','--disable-sync','--mute-audio',
                '--disable-infobars','--password-store=basic','--disable-blink-features=AutomationControlled'],

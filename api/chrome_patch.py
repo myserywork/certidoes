@@ -1,14 +1,21 @@
 """
-Patch para forcar --no-sandbox e --disable-dev-shm-usage no undetected_chromedriver.
-Importar ANTES de qualquer script que use undetected_chromedriver.
+Patch para undetected_chromedriver funcionar em Windows + Docker + Linux.
 
-Em Docker, Chrome PRECISA de --no-sandbox (roda como root) e
---disable-dev-shm-usage (evita crash por /dev/shm limitado).
+Fixes:
+  1. --no-sandbox e --disable-dev-shm-usage (Docker/root)
+  2. Remover version_main hardcoded
+  3. Windows: usar user_data_dir unico por instancia (evita WinError 183)
+  4. Windows: headless=new quando sem display
 """
 import os
+import platform
+import tempfile
+import uuid
+
+IS_WINDOWS = platform.system() == "Windows"
+
 
 def patch_chrome():
-    """Aplica monkey-patch no undetected_chromedriver para adicionar flags Docker."""
     try:
         import undetected_chromedriver as uc
         _original_init = uc.Chrome.__init__
@@ -19,15 +26,21 @@ def patch_chrome():
                 options = uc.ChromeOptions()
                 kwargs["options"] = options
 
-            # Adicionar flags essenciais para Docker/root
             existing_args = set(options.arguments)
-            for flag in ["--no-sandbox", "--disable-dev-shm-usage"]:
+
+            # Flags essenciais
+            for flag in ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]:
                 if flag not in existing_args:
                     options.add_argument(flag)
 
-            # Remover version_main hardcoded (deixar auto-detectar)
+            # Remover version_main hardcoded
             if "version_main" in kwargs and kwargs["version_main"]:
                 del kwargs["version_main"]
+
+            # Windows: user_data_dir unico evita [WinError 183]
+            if IS_WINDOWS and "user_data_dir" not in kwargs:
+                unique_dir = os.path.join(tempfile.gettempdir(), f"uc_{uuid.uuid4().hex[:8]}")
+                kwargs["user_data_dir"] = unique_dir
 
             _original_init(self, *args, **kwargs)
 
@@ -36,5 +49,4 @@ def patch_chrome():
         pass
 
 
-# Auto-aplicar SEMPRE (--no-sandbox nao faz mal fora do Docker)
 patch_chrome()

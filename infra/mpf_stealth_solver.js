@@ -1,10 +1,11 @@
 const fs=require('fs'),pup=require('puppeteer-extra'),S=require('puppeteer-extra-plugin-stealth');
 pup.use(S());
-const P=process.argv[2]||'/home/ramza/telegram_downloads/PEDRO_PROJECT/infra/profiles/mpf';
+const os=require('os');
+const P=process.argv[2]||require('path').join(os.tmpdir(),'chrome_profile_mpf');
 ['SingletonLock','SingletonCookie','SingletonSocket'].forEach(l=>{try{fs.unlinkSync(P+'/'+l)}catch{}});
 (async()=>{
   process.stderr.write('launch\n');
-  const b=await pup.launch({headless:false,executablePath:'/usr/bin/google-chrome',userDataDir:P,
+  const b=await pup.launch({headless:process.platform==='win32'?'new':false,executablePath:process.platform==='win32'?null:'/usr/bin/google-chrome',userDataDir:P,
     args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--no-first-run','--mute-audio',
           '--password-store=basic','--disable-blink-features=AutomationControlled'],
     ignoreDefaultArgs:['--enable-automation'],defaultViewport:null,ignoreHTTPSErrors:true});

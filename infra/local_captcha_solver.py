@@ -22,7 +22,7 @@ PROFILE_BASE = Path(__file__).parent / "profiles"
 SOURCE_PROFILE = Path(tempfile.gettempdir()) / "chrome_profile"
 
 # Namespaces para rotação
-NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
+NAMESPACES = [""] if platform.system() == "Windows" else ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
 MAX_RETRIES = 10
 
 

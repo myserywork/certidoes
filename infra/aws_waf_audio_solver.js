@@ -27,7 +27,7 @@ const readline = require('readline');
 puppeteer.use(StealthPlugin());
 
 const TARGET_URL = process.argv[2] || '';
-const CHROME = '/usr/bin/google-chrome';
+const CHROME = process.platform === 'win32' ? null : '/usr/bin/google-chrome';
 
 function log(msg) { process.stderr.write(`[AWSWAF][${new Date().toTimeString().slice(0,8)}] ${msg}\n`); }
 function respond(obj) { process.stdout.write(JSON.stringify(obj) + '\n'); }
@@ -40,8 +40,8 @@ function respond(obj) { process.stdout.write(JSON.stringify(obj) + '\n'); }
 
     log('Launching stealth Chrome...');
     const browser = await puppeteer.launch({
-        headless: false,
-        executablePath: CHROME,
+        headless: process.platform === 'win32' ? 'new' : false,
+        ...(CHROME ? {executablePath: CHROME} : {}),
         args: [
             '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
             '--window-size=1200,800', '--no-first-run', '--disable-extensions',

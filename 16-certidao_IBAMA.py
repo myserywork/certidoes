@@ -37,7 +37,7 @@ HEADERS = {
 }
 
 # Namespaces para rotação em caso de bloqueio
-NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
+NAMESPACES = [""] if platform.system() == "Windows" else ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
 MAX_RETRIES = 6
 
 

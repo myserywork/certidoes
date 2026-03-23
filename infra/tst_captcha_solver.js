@@ -31,7 +31,7 @@ puppeteer.use(StealthPlugin());
 
 const CPF_CNPJ = process.argv[2] || '';
 const TST_URL = 'https://cndt-certidao.tst.jus.br/inicio.faces';
-const CHROME = '/usr/bin/google-chrome';
+const CHROME = process.platform === 'win32' ? null : '/usr/bin/google-chrome';
 const MAX_ATTEMPTS = 3;
 
 function log(msg) { process.stderr.write(`[TSTJS][${new Date().toTimeString().slice(0,8)}] ${msg}\n`); }
@@ -54,7 +54,7 @@ function waitForLine(rl, timeoutMs = 60000) {
     }
 
     const browser = await puppeteer.launch({
-        headless: false, executablePath: CHROME,
+        headless: process.platform === 'win32' ? 'new' : false, ...(CHROME ? {executablePath: CHROME} : {}),
         args: ['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1200,900',
                '--no-first-run','--disable-extensions','--disable-sync','--mute-audio',
                '--disable-infobars','--password-store=basic',

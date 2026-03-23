@@ -34,7 +34,7 @@ from pathlib import Path
 
 SOLVER_JS = Path(__file__).parent / "tst_captcha_solver.js"
 MAX_RETRIES = 4
-NAMESPACES = ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
+NAMESPACES = [""] if platform.system() == "Windows" else ["", "ns_t0", "ns_t1", "ns_t2", "ns_t3", "ns_t4"]
 
 # ─── Phonetic alphabet mapping (Brazilian style) ─────────────
 # "X de WORD" → the letter that WORD represents
