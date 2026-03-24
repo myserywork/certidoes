@@ -29,22 +29,25 @@ async function solve2captcha(sitekey, pageUrl) {
 
   const submitUrl = `http://2captcha.com/in.php?key=${captchaKey}&method=hcaptcha&sitekey=${sitekey}&pageurl=${encodeURIComponent(pageUrl)}&json=1`;
   const submit = await fetch(submitUrl);
-  const submitData = await submit.json();
-  if (submitData.status !== 1) { log(`2captcha submit erro: ${submitData.request}`); return null; }
-
-  const captchaId = submitData.request;
+  const submitText = await submit.text();
+  let captchaId;
+  if (submitText.startsWith('OK|')) {
+    captchaId = submitText.split('|')[1];
+  } else {
+    try { const d = JSON.parse(submitText); if (d.status===1) captchaId = d.request; else { log(`2captcha erro: ${d.request}`); return null; } }
+    catch { log(`2captcha submit erro: ${submitText}`); return null; }
+  }
   log(`2captcha ID: ${captchaId}`);
 
   for (let i = 0; i < 30; i++) {
     await sleep(5000);
-    const resultUrl = `http://2captcha.com/res.php?key=${captchaKey}&action=get&id=${captchaId}&json=1`;
+    const resultUrl = `http://2captcha.com/res.php?key=${captchaKey}&action=get&id=${captchaId}`;
     const result = await fetch(resultUrl);
-    const resultData = await result.json();
-    if (resultData.status === 1) {
-      log(`hCaptcha resolvido!`);
-      return resultData.request;
-    }
-    if (resultData.request !== 'CAPCHA_NOT_READY') { log(`2captcha erro: ${resultData.request}`); return null; }
+    const resultText = await result.text();
+    if (resultText.startsWith('OK|')) { log('hCaptcha resolvido!'); return resultText.split('|').slice(1).join('|'); }
+    if (resultText.includes('CAPCHA_NOT_READY')) continue;
+    try { const d = JSON.parse(resultText); if (d.status===1) { log('hCaptcha resolvido!'); return d.request; } }
+    catch { log(`2captcha poll: ${resultText}`); return null; }
   }
   return null;
 }
@@ -62,6 +65,55 @@ async function solve2captcha(sitekey, pageUrl) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
 
+    // Interceptar requests para injetar captcha token
+    let injectedToken = null;
+    // Converter data DD/MM/YYYY -> YYYY-MM-DD
+    const dtParts = dtNascimento.split('/');
+    const dtISO = dtParts.length === 3 ? `${dtParts[2]}-${dtParts[1]}-${dtParts[0]}` : dtNascimento;
+
+    await page.setRequestInterception(true);
+    page.on('request', req => {
+      if (req.url().includes('/api/Emissao/')) {
+        const postData = req.postData();
+        if (postData) {
+          try {
+            const body = JSON.parse(postData);
+            // Corrigir data para ISO (Angular pode enviar errado)
+            if (body.dataNascimento && body.dataNascimento.includes('/')) {
+              const p = body.dataNascimento.split('/');
+              body.dataNascimento = `${p[2]}-${p[1]}-${p[0]}`;
+            }
+            if (!body.dataNascimento || body.dataNascimento.length < 10) {
+              body.dataNascimento = dtISO;
+            }
+            // Injetar captcha
+            if (injectedToken) {
+              body.captchaResponse = injectedToken;
+            }
+            log(`Intercepted: ${JSON.stringify(body).substring(0, 150)}`);
+            req.continue({
+              postData: JSON.stringify(body),
+              headers: { ...req.headers(), 'captcha-response': injectedToken || '' },
+            });
+            return;
+          } catch {}
+        }
+      }
+      req.continue();
+    });
+
+    // Capturar resposta da API
+    let apiResponse = null;
+    page.on('response', async res => {
+      if (res.url().includes('/api/Emissao/')) {
+        try {
+          const body = await res.text();
+          apiResponse = { status: res.status(), body };
+          log(`API Response: ${res.status()} ${res.url().split('/').pop()} => ${body.substring(0, 200)}`);
+        } catch {}
+      }
+    });
+
     log('Navegando para Receita PF...');
     await page.goto(URL, { waitUntil: 'networkidle2', timeout: 30000 });
     await sleep(3000);
@@ -76,26 +128,25 @@ async function solve2captcha(sitekey, pageUrl) {
       }
     } catch {}
 
-    // Pegar sitekey do hCaptcha
+    // Pegar sitekey do hCaptcha (pode nao aparecer imediatamente)
     let sitekey = '';
+    // Tentar obter do env config
     try {
-      sitekey = await page.evaluate(() => {
-        const el = document.querySelector('[data-sitekey]');
-        return el ? el.getAttribute('data-sitekey') : '';
-      });
-      if (!sitekey) {
-        sitekey = await page.evaluate(() => {
-          const iframe = document.querySelector('iframe[src*="hcaptcha"]');
-          if (iframe) {
-            const match = iframe.src.match(/sitekey=([^&]+)/);
-            return match ? match[1] : '';
-          }
-          return '';
-        });
-      }
+      const envResp = await page.evaluate(() => fetch('/servico/certidoes/api/env').then(r => r.json()));
+      sitekey = envResp?.captchaPublicKey || '';
     } catch {}
 
-    log(`Sitekey: ${sitekey || 'nao encontrado'}`);
+    if (!sitekey) {
+      try {
+        sitekey = await page.evaluate(() => {
+          const el = document.querySelector('[data-sitekey]');
+          return el ? el.getAttribute('data-sitekey') : '';
+        });
+      } catch {}
+    }
+
+    if (!sitekey) sitekey = '4a65992d-58fc-4812-8b87-789f7e7c4c4b'; // Fallback known key
+    log(`Sitekey: ${sitekey}`);
 
     // Resolver hCaptcha via 2captcha
     let captchaToken = null;
@@ -103,21 +154,45 @@ async function solve2captcha(sitekey, pageUrl) {
       captchaToken = await solve2captcha(sitekey, URL);
     }
 
-    // Injetar token hCaptcha se resolvido
+    // Injetar token hCaptcha
     if (captchaToken) {
-      await page.evaluate((token) => {
-        // Set hcaptcha response
-        const textarea = document.querySelector('[name="h-captcha-response"]') || document.querySelector('textarea[name="h-captcha-response"]');
-        if (textarea) { textarea.value = token; textarea.style.display = 'block'; }
-        // Trigger callback
+      await page.evaluate((token, sk) => {
+        // 1. Se hcaptcha widget existe, setar resposta
         if (window.hcaptcha) {
-          try { window.hcaptcha.execute(); } catch {}
+          try {
+            const ids = window.hcaptcha.getAllIds ? window.hcaptcha.getAllIds() : [];
+            if (ids.length > 0) {
+              ids.forEach(id => { try { window.hcaptcha.setResponse(token, id); } catch {} });
+            }
+          } catch {}
         }
-        // Set cookie
+
+        // 2. Setar textarea hidden (onde Angular le o token)
+        document.querySelectorAll('textarea[name="h-captcha-response"]').forEach(t => {
+          t.value = token; t.innerHTML = token;
+          const ns = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+          ns.call(t, token);
+          t.dispatchEvent(new Event('input', {bubbles: true}));
+          t.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+
+        // 3. Encontrar e chamar callback do Angular
+        // O Angular web component registra callback em window
+        const callbacks = Object.keys(window).filter(k => k.startsWith('hcaptchaCallback') || k.includes('captchaResolved'));
+        callbacks.forEach(cb => { try { window[cb](token); } catch {} });
+
+        // 4. Disparar custom events
+        document.dispatchEvent(new CustomEvent('verified', { detail: { token } }));
+        window.postMessage({ type: 'hcaptcha-verified', token }, '*');
+
+        // 5. Cookie
         document.cookie = `h-captcha-response=${token}; path=/`;
-      }, captchaToken);
-      log('Token hCaptcha injetado');
-      await sleep(1000);
+      }, captchaToken, sitekey);
+      injectedToken = captchaToken;
+      log('Token injetado');
+      await sleep(2000);
+    } else if (sitekey && captchaKey) {
+      log('hCaptcha nao apareceu na pagina — pode nao ser necessario');
     }
 
     // Preencher CPF — limpar e usar evaluate para setar direto
