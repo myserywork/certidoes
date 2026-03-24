@@ -14,21 +14,30 @@ def clean_certidao_html(html: str, titulo: str = "Certidao", orgao: str = "") ->
     Adiciona header DIP e formatação profissional.
     """
     # Extrair o conteúdo relevante
-    # Tentar pegar o body
     body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL | re.IGNORECASE)
     body = body_match.group(1) if body_match else html
 
-    # Remover scripts, nav, menus, iframes
+    # Remover scripts, styles, nav, menus, iframes, forms
     body = re.sub(r'<script[^>]*>.*?</script>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    body = re.sub(r'<style[^>]*>.*?</style>', '', body, flags=re.DOTALL | re.IGNORECASE)
     body = re.sub(r'<nav[^>]*>.*?</nav>', '', body, flags=re.DOTALL | re.IGNORECASE)
     body = re.sub(r'<iframe[^>]*>.*?</iframe>', '', body, flags=re.DOTALL | re.IGNORECASE)
     body = re.sub(r'<header[^>]*>.*?</header>', '', body, flags=re.DOTALL | re.IGNORECASE)
     body = re.sub(r'<footer[^>]*>.*?</footer>', '', body, flags=re.DOTALL | re.IGNORECASE)
-    # Remover menus conhecidos do TJGO
-    body = re.sub(r'<div[^>]*class="[^"]*menu[^"]*"[^>]*>.*?</div>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    # Remover menus, nav bars, sidebars
+    body = re.sub(r'<div[^>]*class="[^"]*(?:menu|sidebar|navbar|topbar|header|footer|bread)[^"]*"[^>]*>.*?</div>', '', body, flags=re.DOTALL | re.IGNORECASE)
     body = re.sub(r'<ul[^>]*class="[^"]*nav[^"]*"[^>]*>.*?</ul>', '', body, flags=re.DOTALL | re.IGNORECASE)
-    # Remover links de JavaScript
     body = re.sub(r'<a[^>]*href="javascript:[^"]*"[^>]*>.*?</a>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    # Remover formularios (inputs, selects, textareas)
+    body = re.sub(r'<form[^>]*>.*?</form>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    body = re.sub(r'<input[^>]*/?\s*>', '', body, flags=re.IGNORECASE)
+    body = re.sub(r'<select[^>]*>.*?</select>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    body = re.sub(r'<textarea[^>]*>.*?</textarea>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    # Remover fieldsets com formulario (TJGO)
+    body = re.sub(r'<fieldset[^>]*>.*?Dados da Certid.*?</fieldset>', '', body, flags=re.DOTALL | re.IGNORECASE)
+    # Limpar tags vazias e espacos excessivos
+    body = re.sub(r'<(?:div|span|p|li|ul|ol)\s*>\s*</(?:div|span|p|li|ul|ol)>', '', body, flags=re.IGNORECASE)
+    body = re.sub(r'\n{3,}', '\n\n', body)
 
     from datetime import datetime
     data = datetime.now().strftime("%d/%m/%Y %H:%M")
