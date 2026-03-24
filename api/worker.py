@@ -109,12 +109,11 @@ def run_stj_pj(p):
     return emitir_certidao_stj_pj(p["cnpj"])
 
 def run_tjgo_civil(p):
-    from scripts_http.tjgo_civil import emitir_certidao_tjgo_civil
-    return emitir_certidao_tjgo_civil(p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"])
+    # TJGO gera certidao via JS no browser, nao funciona HTTP puro
+    return _nav("6-certidao_civil_tjgo_pf", (p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"]))
 
 def run_tjgo_criminal(p):
-    from scripts_http.tjgo_criminal import emitir_certidao_tjgo_criminal
-    return emitir_certidao_tjgo_criminal(p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"])
+    return _nav("8-certidao_criminal_tjgo_pf", (p["nome"], p["cpf"], p["nm_mae"], p["dt_nascimento"]))
 
 def run_tjgo_processos(p):
     from scripts_http.tjgo_processos import emitir_certidao_tjgo_processos
