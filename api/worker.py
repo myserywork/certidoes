@@ -127,8 +127,8 @@ def run_trt18(p):
 # ─── Selenium runners (precisam de browser) ──────────────
 def run_receita_pj(p): return _nav("1-certidao_receita_pj", (p["cnpj"],))
 def run_receita_pf(p):
-    from scripts_http.receita_pf import emitir_certidao_receita_pf
-    return emitir_certidao_receita_pf(p["cpf"], p["dt_nascimento"])
+    # Puppeteer com proxy falha no hCaptcha, voltar para Selenium
+    return _nav("2-certidao_receita_pf", (p["cpf"], p["dt_nascimento"]))
 
 def run_trf1_cpf(p):
     for tp in ["criminal", "civil"]:

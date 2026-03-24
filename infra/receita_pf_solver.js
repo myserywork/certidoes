@@ -20,14 +20,25 @@ const captchaKey = process.argv[5] || process.env.CAPTCHA_API_KEY || '';
 const URL = 'https://servicos.receitafederal.gov.br/servico/certidoes/#/home/cpf';
 const log = (msg) => process.stderr.write(`[RECEITA-PF] ${msg}\n`);
 
+// IPRoyal proxy config
+const PROXY_HOST = process.env.PROXY_HOST || 'geo.iproyal.com';
+const PROXY_PORT = process.env.PROXY_PORT || '12321';
+const PROXY_USER = process.env.PROXY_USER || 'ayrhwrDpz1BoUuw4';
+// Sticky session: mesmo IP para Puppeteer e 2captcha
+const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+const PROXY_PASS = process.env.PROXY_PASS || `JjQ2LCb34qxam82D_country-br_session-${sessionId}_lifetime-10m`;
+const USE_PROXY = process.env.USE_PROXY !== '0';
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // 2captcha hCaptcha solver
 async function solve2captcha(sitekey, pageUrl) {
   if (!captchaKey) return null;
-  log(`Resolvendo hCaptcha via 2captcha...`);
+  log(`Resolvendo hCaptcha via 2captcha + proxy...`);
 
-  const submitUrl = `http://2captcha.com/in.php?key=${captchaKey}&method=hcaptcha&sitekey=${sitekey}&pageurl=${encodeURIComponent(pageUrl)}&json=1`;
+  // Enviar proxy para 2captcha resolver com mesmo IP
+  const proxyParam = USE_PROXY ? `&proxy=${PROXY_USER}:${PROXY_PASS}@${PROXY_HOST}:${PROXY_PORT}&proxytype=HTTP` : '';
+  const submitUrl = `http://2captcha.com/in.php?key=${captchaKey}&method=hcaptcha&sitekey=${sitekey}&pageurl=${encodeURIComponent(pageUrl)}${proxyParam}`;
   const submit = await fetch(submitUrl);
   const submitText = await submit.text();
   let captchaId;
@@ -55,15 +66,25 @@ async function solve2captcha(sitekey, pageUrl) {
 (async () => {
   let browser;
   try {
+    const proxyUrl = USE_PROXY ? `http://${PROXY_HOST}:${PROXY_PORT}` : null;
     const launchOpts = {
       headless: process.platform === 'win32' ? 'new' : false,
-      args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--window-size=1400,900'],
+      args: [
+        '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--window-size=1400,900',
+        ...(proxyUrl ? [`--proxy-server=${proxyUrl}`] : []),
+      ],
       ...(process.platform !== 'win32' ? { executablePath: '/usr/bin/google-chrome' } : {}),
     };
 
     browser = await pup.launch(launchOpts);
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
+
+    // Autenticar proxy
+    if (USE_PROXY) {
+      await page.authenticate({ username: PROXY_USER, password: PROXY_PASS });
+      log(`Proxy: ${PROXY_HOST}:${PROXY_PORT} (BR residential)`);
+    }
 
     // Interceptar requests para injetar captcha token
     let injectedToken = null;
@@ -78,7 +99,7 @@ async function solve2captcha(sitekey, pageUrl) {
         if (postData) {
           try {
             const body = JSON.parse(postData);
-            // Corrigir data para ISO (Angular pode enviar errado)
+            // Corrigir data para ISO
             if (body.dataNascimento && body.dataNascimento.includes('/')) {
               const p = body.dataNascimento.split('/');
               body.dataNascimento = `${p[2]}-${p[1]}-${p[0]}`;
@@ -86,15 +107,12 @@ async function solve2captcha(sitekey, pageUrl) {
             if (!body.dataNascimento || body.dataNascimento.length < 10) {
               body.dataNascimento = dtISO;
             }
-            // Injetar captcha
-            if (injectedToken) {
+            // Se Angular não incluiu captchaResponse, injetar o nosso
+            if (!body.captchaResponse && injectedToken) {
               body.captchaResponse = injectedToken;
             }
-            log(`Intercepted: ${JSON.stringify(body).substring(0, 150)}`);
-            req.continue({
-              postData: JSON.stringify(body),
-              headers: { ...req.headers(), 'captcha-response': injectedToken || '' },
-            });
+            log(`Body: ${JSON.stringify(body).substring(0, 200)}`);
+            req.continue({ postData: JSON.stringify(body) });
             return;
           } catch {}
         }
@@ -228,18 +246,61 @@ async function solve2captcha(sitekey, pageUrl) {
     const valorData = await page.evaluate(() => document.querySelector('input[name="dataNascimento"]')?.value);
     log(`Campo data apos type: "${valorData}"`);
 
-    // Clicar botao de emitir/consultar via evaluate (XPath nao funciona no headless com Angular)
+    // Executar hCaptcha.execute() para obter token ANTES de submeter
+    log('Executando hCaptcha...');
+    const hcapToken = await page.evaluate(() => {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => resolve(null), 30000);
+        if (window.hcaptcha) {
+          try {
+            window.hcaptcha.execute({ async: true }).then(resp => {
+              clearTimeout(timeout);
+              resolve(resp?.response || resp);
+            }).catch(() => { clearTimeout(timeout); resolve(null); });
+          } catch (e) {
+            // Tentar callback
+            try {
+              window.hcaptcha.execute();
+              // Esperar callback
+              const check = setInterval(() => {
+                const textareas = document.querySelectorAll('textarea[name="h-captcha-response"]');
+                for (const t of textareas) {
+                  if (t.value && t.value.length > 10) {
+                    clearInterval(check);
+                    clearTimeout(timeout);
+                    resolve(t.value);
+                    return;
+                  }
+                }
+              }, 500);
+            } catch { clearTimeout(timeout); resolve(null); }
+          }
+        } else {
+          clearTimeout(timeout);
+          resolve(null);
+        }
+      });
+    });
+
+    if (hcapToken) {
+      log(`hCaptcha token obtido via execute()! (${hcapToken.length} chars)`);
+      injectedToken = hcapToken;
+    } else if (captchaToken) {
+      log('hCaptcha.execute() falhou, usando token 2captcha');
+      injectedToken = captchaToken;
+    } else {
+      log('Sem token hCaptcha - tentando sem');
+    }
+
+    // Clicar botao
     log('Clicando botao...');
     const clickResult = await page.evaluate(() => {
       const allBtns = Array.from(document.querySelectorAll('button'));
-      const labels = ['Emitir Certid', 'Consultar Certid', 'Nova Certid', 'Consultar'];
+      const labels = ['Emitir Certid', 'Consultar Certid', 'Nova Certid'];
       for (const label of labels) {
         const btn = allBtns.find(b => b.textContent.includes(label));
         if (btn) { btn.click(); return `Clicou: ${btn.textContent.trim().substring(0, 30)}`; }
       }
-      // Fallback: qualquer botao que nao seja Voltar
-      const actionBtn = allBtns.find(b => !b.textContent.includes('Voltar') && !b.textContent.includes('Aceitar') && b.textContent.trim().length > 3);
-      if (actionBtn) { actionBtn.click(); return `Fallback: ${actionBtn.textContent.trim().substring(0, 30)}`; }
       return 'nenhum botao';
     });
     log(clickResult);
