@@ -121,8 +121,8 @@ def run_tjgo_processos(p):
     return emitir_certidao_tjgo_processos(p.get("cpf") or p.get("cnpj"))
 
 def run_trt18(p):
-    from scripts_http.trt18 import emitir_certidao_trt18
-    return emitir_certidao_trt18(p.get("cpf") or p.get("cnpj"))
+    # TRT18 JSF precisa de browser (AJAX interno)
+    return _nav("15-certidao_TRT18", (p.get("cpf") or p.get("cnpj"), "andamento"))
 
 # ─── Selenium runners (precisam de browser) ──────────────
 def run_receita_pj(p): return _nav("1-certidao_receita_pj", (p["cnpj"],))
