@@ -31,12 +31,19 @@ def _submit(params: dict) -> str:
     params["json"] = 1
 
     resp = requests.post(SUBMIT_URL, data=params, timeout=30)
-    data = resp.json()
 
-    if data.get("status") != 1:
-        raise Exception(f"2captcha submit erro: {data.get('request', data)}")
-
-    return data["request"]  # captcha_id
+    # Tentar JSON primeiro, fallback para texto
+    try:
+        data = resp.json()
+        if data.get("status") != 1:
+            raise Exception(f"2captcha submit erro: {data.get('request', data)}")
+        return data["request"]
+    except (ValueError, KeyError):
+        # Formato texto: "OK|captcha_id"
+        text = resp.text.strip()
+        if text.startswith("OK|"):
+            return text.split("|")[1]
+        raise Exception(f"2captcha submit erro: {text}")
 
 
 def _poll(captcha_id: str) -> str:
@@ -50,13 +57,22 @@ def _poll(captcha_id: str) -> str:
             "id": captcha_id,
             "json": 1,
         }, timeout=30)
-        data = resp.json()
 
-        if data.get("status") == 1:
-            return data["request"]  # token
-
-        if data.get("request") != "CAPCHA_NOT_READY":
-            raise Exception(f"2captcha erro: {data.get('request', data)}")
+        text = resp.text.strip()
+        # Tentar JSON
+        try:
+            data = resp.json()
+            if data.get("status") == 1:
+                return data["request"]
+            if data.get("request") != "CAPCHA_NOT_READY":
+                raise Exception(f"2captcha erro: {data.get('request', data)}")
+        except (ValueError, KeyError):
+            # Formato texto
+            if text.startswith("OK|"):
+                return text.split("|", 1)[1]
+            if "CAPCHA_NOT_READY" in text:
+                continue
+            raise Exception(f"2captcha erro: {text}")
 
     raise Exception("2captcha timeout")
 

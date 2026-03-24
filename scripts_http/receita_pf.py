@@ -63,17 +63,26 @@ def emitir_certidao_receita_pf(cpf: str, dt_nascimento: str) -> dict:
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Origin": "https://servicos.receitafederal.gov.br",
         "Referer": PAGE_URL,
-        "captcha-response": captcha_token,
     })
+    # Enviar captcha token como cookie E header (a Receita pode checar em qualquer lugar)
+    session.cookies.set("h-captcha-response", captcha_token, domain="servicos.receitafederal.gov.br")
+    session.cookies.set("captchaResponse", captcha_token, domain="servicos.receitafederal.gov.br")
 
     try:
-        # 2. Verificar/Emitir certidao
+        # 2. Pegar sessao/cookies visitando a pagina primeiro
+        print("[Receita PF] Obtendo sessao...")
+        session.get(PAGE_URL, timeout=15)
+        session.get(f"{API_BASE}/env", timeout=10)
+
+        # 3. Verificar/Emitir certidao
         print("[Receita PF] Chamando API Emissao/verificar...")
         r = session.post(f"{API_BASE}/Emissao/verificar", json={
             "ni": clean_cpf,
             "tipoContribuinte": "PF",
             "dataNascimento": dt_iso,
             "tipoContribuinteEnum": "CPF",
+            "captchaResponse": captcha_token,
+            "hCaptchaResponse": captcha_token,
         }, timeout=30)
 
         print(f"[Receita PF] Response: {r.status_code} ({len(r.text)} bytes)")
