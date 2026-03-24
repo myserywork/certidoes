@@ -1,40 +1,42 @@
-"""STJ - Certidao Pessoa Fisica (HTTP-only, sem browser)"""
+"""STJ - Certidao Pessoa Fisica (HTTP-only, retorna PDF real)"""
+import os
+import tempfile
 import requests
-from scripts_http._shared import clean_certidao_html, html_to_pdf, upload_pdf
-
-TITULO = "Certidao STJ PF"
-ORGAO = "Superior Tribunal de Justica"
+from scripts_http._shared import upload_pdf
 
 def emitir_certidao_stj(cpf: str) -> dict:
     print(f"[STJ PF] Iniciando para CPF: {cpf}")
     session = requests.Session()
-    session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    })
+    session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
     try:
-        print("[STJ PF] Obtendo sessao...")
-        r1 = session.get("https://processo.stj.jus.br/processo/certidao/emissao", timeout=30)
-        r1.raise_for_status()
+        # 1. GET sessao
+        session.get("https://processo.stj.jus.br/processo/certidao/emissao", timeout=15)
 
+        # 2. POST com acao=emitir retorna PDF direto
         print("[STJ PF] Emitindo certidao...")
         r = session.post("https://processo.stj.jus.br/processo/certidao/emitir",
-            data={"acao": "pesquisarParte", "certidaoTipo": "pessoafisicaconstanadaconsta", "parteCPF": cpf, "certidaoProcessosEmTramite": "1"},
-            timeout=60)
-        r.raise_for_status()
-        print(f"[STJ PF] Resposta ({len(r.text)} bytes)")
-        if len(r.text) < 200:
-            return {"status": "erro", "link": None, "mensagem": "Resposta muito curta"}
+            data={"acao": "emitir", "certidaoTipo": "pessoafisicaconstanadaconsta",
+                  "parteCPF": cpf, "certidaoProcessosEmTramite": "1"},
+            timeout=30)
 
-        cleaned = clean_certidao_html(r.text, TITULO, ORGAO)
-        pdf_path = html_to_pdf(cleaned, "certidao_stj_pf.pdf")
-        if not pdf_path:
-            return {"status": "erro", "link": None, "mensagem": "Falha ao gerar PDF"}
+        ct = r.headers.get("content-type", "")
+        is_pdf = r.content[:5] == b'%PDF-'
+        print(f"[STJ PF] Response: {r.status_code} | {ct[:30]} | PDF={is_pdf} | {len(r.content)} bytes")
 
-        link = upload_pdf(pdf_path)
-        if not link:
-            return {"status": "erro", "link": None, "mensagem": "Falha no upload"}
+        if is_pdf and len(r.content) > 500:
+            # Salvar PDF
+            tmpdir = tempfile.mkdtemp()
+            pdf_path = os.path.join(tmpdir, f"certidao_stj_pf_{cpf}.pdf")
+            with open(pdf_path, "wb") as f:
+                f.write(r.content)
+            link = upload_pdf(pdf_path)
+            print(f"[STJ PF] Sucesso! PDF real {len(r.content)} bytes")
+            return {"status": "sucesso", "link": link, "tipo_certidao": "stj_pf", "mensagem": "Certidao STJ PF emitida"}
 
-        print(f"[STJ PF] Sucesso! Link: {link}")
-        return {"status": "sucesso", "link": link, "mensagem": "Certidao STJ PF emitida com sucesso."}
+        # Nao retornou PDF - verificar erro
+        if "nenhum processo" in r.text.lower() or "nada consta" in r.text.lower():
+            return {"status": "sucesso", "link": None, "tipo_certidao": "nada_consta", "mensagem": "STJ: Nada consta"}
+
+        return {"status": "falha", "mensagem": f"STJ nao retornou PDF (content-type: {ct[:30]})"}
     except Exception as e:
-        return {"status": "erro", "link": None, "mensagem": f"Erro: {str(e)[:200]}"}
+        return {"status": "erro", "mensagem": f"Erro: {str(e)[:200]}"}
